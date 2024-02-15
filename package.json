@@ -1,0 +1,54 @@
+{
+  "name": "pork_market",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "start": "node server",
+    "dev": "cross-env NODE_ENV=development nodemon"
+  },
+  "dependencies": {
+    "@project-serum/anchor": "^0.26.0",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.34",
+    "@solana/wallet-adapter-wallets": "^0.19.24",
+    "@solana/web3.js": "^1.87.6",
+    "axios": "^1.6.2",
+    "body-parser": "^1.20.2",
+    "bs58": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.4.4",
+    "mongoose": "^8.0.3",
+    "next": "14.0.4",
+    "next-recaptcha-v3": "^1.3.0",
+    "react": "^18",
+    "react-div-100vh": "^0.7.0",
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "use-debounce": "^10.0.0",
+    "use-detect-keyboard-open": "^0.4.0",
+    "util": "^0.12.5",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "nodemon": "^3.0.2",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5",
+    "webpack": "^5.90.0"
+  },
+  "engines": {
+    "node": ">= v18.17.0"
+  }
+}

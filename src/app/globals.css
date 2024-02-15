@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  width: 18px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #101115;
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+}
+
+.wallet-adapter-dropdown {
+  border-radius: 8px;
+  border: 1px solid white;
+  border-color: white;
+  width: 160px;
+  display: flex;
+  justify-content: center;
+}
+
+.wallet-adapter-dropdown-list {
+  width: 160px;
+  z-index: 20;
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  background: transparent;
+}
+
+.wallet-adapter-button {
+  font-size: 16px;
+  height: 36px;
+  line-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.modal-center {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  margin: auto;
+}
+
+.checkbox-container input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 1px;
+  left: 8px;
+  height: 19px;
+  width: 19px;
+  border-radius: 4px;
+  background-color: transparent;
+  border: 2px solid #525252;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 12px;
+  border: solid #525252;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
