@@ -75,7 +75,8 @@
 .font-lilitaone {
   font-family: LilitaOne;
 }
-/* 
-.content-container {
-  min-height: calc(100vh - 80px);
-} */
+
+.text-shadow {
+  text-shadow: 0 4px black;
+  -webkit-text-stroke: 1px black;
+}
