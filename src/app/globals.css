@@ -11,7 +11,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #101115;
+  background-color: #0a4c8f;
   border-radius: 20px;
   border: 6px solid transparent;
   background-clip: content-box;
@@ -28,8 +28,13 @@
 }
 
 .wallet-adapter-dropdown-list {
+  font-family: LilitaOne;
   width: 200px;
   z-index: 20;
+}
+
+.wallet-adapter-dropdown-list-item {
+  font-size: 16px;
 }
 
 .wallet-adapter-button:not([disabled]):hover {
@@ -55,8 +60,6 @@
 
 .pork-background {
   background-image: url('/images/background.svg');
-  /* background-position: center; */
-  /* background-repeat: repeat; */
   background-size: cover;
   min-height: 100vh;
   position: fixed;
@@ -66,9 +69,13 @@
 
 @font-face {
   font-family: 'LilitaOne';
-  src: url('/public/fonts/LilitaOne-Regular.ttf');
+  src: url('/fonts/LilitaOne_Regular.ttf');
 }
 
 .font-lilitaone {
   font-family: LilitaOne;
 }
+/* 
+.content-container {
+  min-height: calc(100vh - 80px);
+} */

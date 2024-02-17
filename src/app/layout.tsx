@@ -1,11 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Urbanist } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { ContextProvider } from "@/contexts/ContextProvider";
 import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
-const urbanist = Urbanist({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
   initialScale: 1,
@@ -21,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={urbanist.className}>
+      <body>
         <Toaster
           toastOptions={{
             className: "",

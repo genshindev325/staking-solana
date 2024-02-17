@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="827" height="261" viewBox="0 0 827 261">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #003265;
+        stroke: #0d0c11;
+        stroke-width: 2px;
+        opacity: 0.7;
+      }
+
+      .cls-1, .cls-5, .cls-6, .cls-7 {
+        stroke-linejoin: round;
+        fill-rule: evenodd;
+      }
+
+      .cls-2, .cls-3, .cls-4 {
+        font-size: 84.357px;
+      }
+
+      .cls-2 {
+        fill: #dcdcdc;
+      }
+
+      .cls-2, .cls-4 {
+        text-anchor: middle;
+      }
+
+      .cls-2, .cls-3, .cls-4, .cls-8 {
+        font-family: "Lilita One";
+      }
+
+      .cls-3, .cls-4 {
+        fill: #ddd;
+      }
+
+      .cls-5, .cls-6, .cls-7 {
+        fill: #235071;
+        stroke: #e3e3e3;
+        stroke-width: 3px;
+      }
+
+      .cls-5 {
+        filter: url(#filter);
+      }
+
+      .cls-6 {
+        filter: url(#filter-2);
+      }
+
+      .cls-7 {
+        filter: url(#filter-3);
+      }
+
+      .cls-8 {
+        font-size: 11.357px;
+        fill: #fff;
+        text-transform: uppercase;
+      }
+    </style>
+    <filter id="filter" x="17.969" y="24" width="287" height="54" filterUnits="userSpaceOnUse">
+      <feGaussianBlur result="blur" stdDeviation="2.667" in="SourceAlpha"/>
+      <feFlood result="flood" flood-color="aqua"/>
+      <feComposite result="composite-2" operator="out" in2="blur"/>
+      <feComposite result="composite" operator="in" in2="SourceAlpha"/>
+      <feBlend result="blend" mode="overlay" in2="SourceGraphic"/>
+    </filter>
+    <filter id="filter-2" x="18" y="100" width="254" height="54" filterUnits="userSpaceOnUse">
+      <feGaussianBlur result="blur" stdDeviation="2.667" in="SourceAlpha"/>
+      <feFlood result="flood" flood-color="aqua"/>
+      <feComposite result="composite-2" operator="out" in2="blur"/>
+      <feComposite result="composite" operator="in" in2="SourceAlpha"/>
+      <feBlend result="blend" mode="overlay" in2="SourceGraphic"/>
+    </filter>
+    <filter id="filter-3" x="18" y="177" width="181" height="54" filterUnits="userSpaceOnUse">
+      <feGaussianBlur result="blur" stdDeviation="2.667" in="SourceAlpha"/>
+      <feFlood result="flood" flood-color="aqua"/>
+      <feComposite result="composite-2" operator="out" in2="blur"/>
+      <feComposite result="composite" operator="in" in2="SourceAlpha"/>
+      <feBlend result="blend" mode="overlay" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+  <path id="infoBg_copy" data-name="infoBg copy" class="cls-1" d="M827,250.173c0,1.911-.041,2.9-1.682,3.949-2.114,1.18-6.69,2.109-12.5,2.538C807.6,257,802.745,257,793.263,257H37.737C28.256,257,23.4,257,18.186,256.66c-5.81-.429-10.386-1.358-12.5-2.538C4.045,253.068,4,252.085,4,250.175c0-.01,0-0.02,0-0.03V10.857c0-.01,0-0.02,0-0.03,0-1.91.042-2.893,1.682-3.947C7.8,5.7,12.376,4.771,18.186,4.342,23.4,4.007,28.256,4,37.737,4H793.263c9.482,0,14.341.007,19.551,0.342,5.81,0.429,10.386,1.359,12.5,2.539C826.955,7.934,827,8.918,827,10.829a0.273,0.273,0,0,1,0,.028V250.145A0.236,0.236,0,0,1,827,250.173Z"/>
+  <text id="_Buy_and_deposit_PORK_to_earn_yield." data-name=" Buy and deposit $PORK to earn yield." class="cls-2" transform="matrix(0.356, 0, 0, 0.356, 541.754, 62.367)"><tspan x="0"> Buy and deposit $PORK to earn yield.</tspan></text>
+  <text id="Compound_yield_to_maximize_earnings." data-name="Compound yield to maximize earnings." class="cls-3" transform="matrix(0.356, 0, 0, 0.356, 275.836, 137.148)">Compound yield to maximize earnings.</text>
+  <text id="_Withdraw_yield_referrals_to_your_wallet." data-name=" Withdraw yield &amp; referrals to your wallet." class="cls-4" transform="matrix(0.356, 0, 0, 0.356, 464.803, 215.111)"><tspan x="0"> Withdraw yield &amp; referrals to your wallet.</tspan></text>
+  <g style="fill: #235071; filter: url(#filter)">
+    <path id="Rounded_Rectangle_1027_copy_4" data-name="Rounded Rectangle 1027 copy 4" class="cls-5" d="M304.759,32.447l-11.91,36.247c-1.77,5.387-10.007,9.29-19.6,9.29l-171.812-.007c-0.141,0-.281.012-0.424,0.012H28.337c-5.718,0-10.354-2.678-10.354-5.981V29.992c0-3.3,4.636-5.981,10.354-5.981h72.672c0.19,0,.376.011,0.565,0.017l190.958,0C300.322,24.032,306.2,28.074,304.759,32.447Z" style="stroke: inherit; filter: none; fill: inherit"/>
+  </g>
+  <use xlink:href="#Rounded_Rectangle_1027_copy_4" style="stroke: #e3e3e3; filter: none; fill: none"/>
+  <g style="fill: #235071; filter: url(#filter-2)">
+    <path id="Rounded_Rectangle_1027_copy_4-2" data-name="Rounded Rectangle 1027 copy 4" class="cls-6" d="M271.819,108.447l-10.542,36.246c-1.566,5.387-8.857,9.29-17.352,9.29l-152.076-.007c-0.126,0-.249.013-0.376,0.013H27.149c-5.061,0-9.165-2.678-9.165-5.981V105.992c0-3.3,4.1-5.981,9.165-5.981H91.474c0.169,0,.333.011,0.5,0.017l169.023,0C267.892,100.032,273.091,104.074,271.819,108.447Z" style="stroke: inherit; filter: none; fill: inherit"/>
+  </g>
+  <use xlink:href="#Rounded_Rectangle_1027_copy_4-2" style="stroke: #e3e3e3; filter: none; fill: none"/>
+  <g style="fill: #235071; filter: url(#filter-3)">
+    <path id="Rounded_Rectangle_1027_copy_4-3" data-name="Rounded Rectangle 1027 copy 4" class="cls-7" d="M198.871,185.447l-7.512,36.246c-1.116,5.387-6.312,9.29-12.365,9.29l-108.369-.007c-0.089,0-.177.013-0.268,0.013H24.52a6.274,6.274,0,0,1-6.531-5.981V182.992a6.274,6.274,0,0,1,6.531-5.981H70.357c0.12,0,.238.011,0.356,0.017l120.446,0C196.073,177.032,199.777,181.074,198.871,185.447Z" style="stroke: inherit; filter: none; fill: inherit"/>
+  </g>
+  <use xlink:href="#Rounded_Rectangle_1027_copy_4-3" style="stroke: #e3e3e3; filter: none; fill: none"/>
+  <text id="_1:_DEPOSIT_PORK" data-name="#1: DEPOSIT $PORK" class="cls-8" transform="translate(26.002 61.716) scale(2.641)">#1: DEPOSIT $PORK</text>
+  <text id="_2:_YIELD_PORK" data-name="#2: YIELD $PORK" class="cls-8" transform="translate(24.002 136.716) scale(2.641)">#2: YIELD $PORK</text>
+  <text id="_3:_CLAIM" data-name="#3: CLAIM" class="cls-8" transform="translate(28.002 214.91) scale(2.641)">#3: CLAIM</text>
+</svg>
