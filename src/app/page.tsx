@@ -2,9 +2,11 @@
 
 import dynamic from "next/dynamic";
 import React, { useState, useEffect } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import toast from "react-hot-toast";
+import { useWallet } from "@solana/wallet-adapter-react";
+import axios from "axios";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -16,14 +18,44 @@ export default function Main() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [depositModal, setDepositModal] = useState(false);
   const [referalLink, setReferalLink] = useState("");
+  const [depositAmount, setDepositAmount] = useState("0");
 
   const { publicKey } = useWallet();
+  const searchParams = useSearchParams();
+  const referrer = searchParams.get("ref");
 
   useEffect(() => {
     if (publicKey) {
       setReferalLink(`https://pork.finance?ref=${publicKey?.toBase58()}`);
     }
   }, [publicKey]);
+
+  const handleDeposit = async () => {
+    if (!publicKey) {
+      return;
+    }
+
+    const amount = parseFloat(depositAmount);
+
+    if (!amount) {
+      return;
+    }
+
+    if (referrer) {
+      try {
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/referral`,
+          {
+            referrer,
+            user: publicKey?.toBase58(),
+            amount,
+          }
+        );
+
+        console.log(data.msg);
+      } catch (err) {}
+    }
+  };
 
   return (
     <div>
@@ -55,7 +87,7 @@ export default function Main() {
               width={60}
               height={60}
               onClick={() => {
-                window.open('https://x.com/johnporksolana', '_blank');
+                window.open("https://x.com/johnporksolana", "_blank");
               }}
             />
             <Image
@@ -65,7 +97,7 @@ export default function Main() {
               width={60}
               height={60}
               onClick={() => {
-                window.open('https://t.me/johnporkwtf', '_blank');
+                window.open("https://t.me/johnporkwtf", "_blank");
               }}
             />
             <Image
@@ -75,7 +107,7 @@ export default function Main() {
               width={60}
               height={60}
               onClick={() => {
-                window.open('https://johnpork.wtf', '_blank');
+                window.open("https://johnpork.wtf", "_blank");
               }}
             />
             <Image
@@ -85,7 +117,10 @@ export default function Main() {
               width={60}
               height={60}
               onClick={() => {
-                window.open('https://dexscreener.com/solana/ggt3gs7vszkkljaz3c1jhq5z5yt9mp5qn6uep7adxr2d', '_blank');
+                window.open(
+                  "https://dexscreener.com/solana/ggt3gs7vszkkljaz3c1jhq5z5yt9mp5qn6uep7adxr2d",
+                  "_blank"
+                );
               }}
             />
             <div className="relative flex items-center justify-center w-[128px] hover:cursor-pointer">
@@ -96,7 +131,10 @@ export default function Main() {
                 width={128}
                 height={60}
                 onClick={() => {
-                  window.open('https://jup.ag/swap/SOL-PORK_2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy', '_blank');
+                  window.open(
+                    "https://jup.ag/swap/SOL-PORK_2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy",
+                    "_blank"
+                  );
                 }}
               />
             </div>
@@ -139,6 +177,7 @@ export default function Main() {
                 </div>
                 <input
                   type="text"
+                  spellCheck={false}
                   defaultValue={referalLink}
                   className="text-black indent-2 h-[40px] w-[340px] text-[16px] 2xl:h-[56px] 2xl:w-[400px] 2xl:text-[20px] mt-[12px]"
                 />
@@ -151,7 +190,9 @@ export default function Main() {
                     className="absolute"
                     onClick={() => {
                       navigator.clipboard.writeText(referalLink);
-                      toast.success("Referral Link Copied to Clipboard.", { duration: 3000 });
+                      toast.success("Referral Link Copied to Clipboard.", {
+                        duration: 3000,
+                      });
                     }}
                   />
                 </div>
@@ -213,7 +254,10 @@ export default function Main() {
                   className="absolute"
                   fill
                   onClick={() => {
-                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                    window.open(
+                      "https://pork-finance.gitbook.io/pork.finance",
+                      "_blank"
+                    );
                   }}
                 />
               </div>
@@ -224,7 +268,10 @@ export default function Main() {
                   className="absolute"
                   fill
                   onClick={() => {
-                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                    window.open(
+                      "https://pork-finance.gitbook.io/pork.finance",
+                      "_blank"
+                    );
                   }}
                 />
               </div>
@@ -289,8 +336,12 @@ export default function Main() {
                 <div className="text-[26px]">Deposit $PORK</div>
                 <input
                   type="text"
+                  spellCheck={false}
                   placeholder="Enter $PORK Amount"
                   className="text-black indent-2 h-[50px] w-[340px] text-[20px] mt-[12px]"
+                  onChange={(e) => {
+                    setDepositAmount(e.target.value);
+                  }}
                 />
                 <div className="flex gap-[12px] mt-[12px]">
                   <Image
@@ -299,6 +350,9 @@ export default function Main() {
                     className="hover:cursor-pointer"
                     width={166}
                     height={60}
+                    onClick={() => {
+                      handleDeposit();
+                    }}
                   />
                   <Image
                     src="/images/modal/buy_pork.svg"
@@ -306,6 +360,12 @@ export default function Main() {
                     className="hover:cursor-pointer"
                     width={166}
                     height={60}
+                    onClick={() => {
+                      window.open(
+                        "https://jup.ag/swap/SOL-PORK_2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy",
+                        "_blank"
+                      );
+                    }}
                   />
                 </div>
                 <span className="text-[10px] text-center font-thin">
@@ -356,7 +416,10 @@ export default function Main() {
                   className="absolute"
                   fill
                   onClick={() => {
-                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                    window.open(
+                      "https://pork-finance.gitbook.io/pork.finance",
+                      "_blank"
+                    );
                   }}
                 />
               </div>
@@ -367,7 +430,10 @@ export default function Main() {
                   className="absolute"
                   fill
                   onClick={() => {
-                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                    window.open(
+                      "https://pork-finance.gitbook.io/pork.finance",
+                      "_blank"
+                    );
                   }}
                 />
               </div>
@@ -399,7 +465,12 @@ export default function Main() {
               <div className="text-[26px]">Deposit $PORK</div>
               <input
                 type="text"
+                spellCheck={false}
                 placeholder="Enter $PORK Amount"
+                value={depositAmount}
+                onChange={(e) => {
+                  setDepositAmount(e.target.value);
+                }}
                 className="text-black indent-2 h-[50px] w-[340px] text-[20px] mt-[12px]"
               />
               <div className="flex gap-[12px] mt-[12px]">
@@ -409,6 +480,9 @@ export default function Main() {
                   className="hover:cursor-pointer"
                   width={166}
                   height={60}
+                  onClick={() => {
+                    handleDeposit();
+                  }}
                 />
                 <Image
                   src="/images/modal/buy_pork.svg"
@@ -416,6 +490,12 @@ export default function Main() {
                   className="hover:cursor-pointer"
                   width={166}
                   height={60}
+                  onClick={() => {
+                    window.open(
+                      "https://jup.ag/swap/SOL-PORK_2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy",
+                      "_blank"
+                    );
+                  }}
                 />
               </div>
               <span className="text-[10px] text-center font-thin">
@@ -455,7 +535,7 @@ export default function Main() {
                   width={60}
                   height={60}
                   onClick={() => {
-                    window.open('https://x.com/johnporksolana', '_blank');
+                    window.open("https://x.com/johnporksolana", "_blank");
                   }}
                 />
                 <Image
@@ -465,7 +545,7 @@ export default function Main() {
                   width={60}
                   height={60}
                   onClick={() => {
-                    window.open('https://t.me/johnporkwtf', '_blank');
+                    window.open("https://t.me/johnporkwtf", "_blank");
                   }}
                 />
               </div>
@@ -477,7 +557,7 @@ export default function Main() {
                   width={60}
                   height={60}
                   onClick={() => {
-                    window.open('https://johnpork.wtf/', '_blank');
+                    window.open("https://johnpork.wtf/", "_blank");
                   }}
                 />
                 <Image
@@ -487,7 +567,10 @@ export default function Main() {
                   width={60}
                   height={60}
                   onClick={() => {
-                    window.open('https://dexscreener.com/solana/ggt3gs7vszkkljaz3c1jhq5z5yt9mp5qn6uep7adxr2d', '_blank');
+                    window.open(
+                      "https://dexscreener.com/solana/ggt3gs7vszkkljaz3c1jhq5z5yt9mp5qn6uep7adxr2d",
+                      "_blank"
+                    );
                   }}
                 />
               </div>

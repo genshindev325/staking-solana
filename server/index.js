@@ -22,6 +22,10 @@ app_server.use(
 app_server.use(cors());
 app_server.use(express.static("public"));
 
+const apiRoute = require("./routes/api");
+
+app_server.use("/api", apiRoute);
+
 const privateKey = readFileSync(`secrets/pork_staking.pem`, "utf8");
 const certificate = readFileSync(`secrets/pork_staking.crt`, "utf8");
 const caRoot = readFileSync(`secrets/pork_staking_root.crt`, "utf8");
