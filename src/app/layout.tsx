@@ -25,8 +25,9 @@ export default function RootLayout({
             className: "",
             style: {
               borderRadius: "10px",
-              background: "#39393e",
+              background: "#0a4c8f",
               color: "#fff",
+              fontFamily: "LilitaOne"
             },
             position: "top-center",
           }}

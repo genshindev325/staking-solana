@@ -1,11 +1,9 @@
 "use client"; // This is a client component
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import React, { useState, useEffect, useRef } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, ParsedAccountData } from "@solana/web3.js";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import toast from "react-hot-toast";
 import Image from "next/image";
 
 const WalletMultiButtonDynamic = dynamic(
@@ -17,6 +15,15 @@ const WalletMultiButtonDynamic = dynamic(
 export default function Main() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [depositModal, setDepositModal] = useState(false);
+  const [referalLink, setReferalLink] = useState("");
+
+  const { publicKey } = useWallet();
+
+  useEffect(() => {
+    if (publicKey) {
+      setReferalLink(`https://pork.finance?ref=${publicKey?.toBase58()}`);
+    }
+  }, [publicKey]);
 
   return (
     <div>
@@ -47,27 +54,39 @@ export default function Main() {
               alt="Twitter SVG"
               width={60}
               height={60}
+              onClick={() => {
+                window.open('https://x.com/johnporksolana', '_blank');
+              }}
             />
             <Image
               src="/images/buttons/telegram.svg"
               className="hover:cursor-pointer"
-              alt="Twitter SVG"
+              alt="Telegram SVG"
               width={60}
               height={60}
+              onClick={() => {
+                window.open('https://t.me/johnporkwtf', '_blank');
+              }}
             />
             <Image
               src="/images/buttons/website.svg"
               className="hover:cursor-pointer"
-              alt="Twitter SVG"
+              alt="Website SVG"
               width={60}
               height={60}
+              onClick={() => {
+                window.open('https://johnpork.wtf', '_blank');
+              }}
             />
             <Image
               src="/images/buttons/chart.svg"
               className="hover:cursor-pointer"
-              alt="Twitter SVG"
+              alt="Chart SVG"
               width={60}
               height={60}
+              onClick={() => {
+                window.open('https://dexscreener.com/solana/ggt3gs7vszkkljaz3c1jhq5z5yt9mp5qn6uep7adxr2d', '_blank');
+              }}
             />
             <div className="relative flex items-center justify-center w-[128px] hover:cursor-pointer">
               <Image
@@ -76,6 +95,9 @@ export default function Main() {
                 className="absolute"
                 width={128}
                 height={60}
+                onClick={() => {
+                  window.open('https://jup.ag/swap/SOL-PORK_2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy', '_blank');
+                }}
               />
             </div>
           </div>
@@ -117,7 +139,7 @@ export default function Main() {
                 </div>
                 <input
                   type="text"
-                  defaultValue="https://www.bminer.app?ref=3cftK6bqe6JFC4yB2MaAeCTaADgzs1F3p7eSyDoANzwS"
+                  defaultValue={referalLink}
                   className="text-black indent-2 h-[40px] w-[340px] text-[16px] 2xl:h-[56px] 2xl:w-[400px] 2xl:text-[20px] mt-[12px]"
                 />
 
@@ -127,6 +149,10 @@ export default function Main() {
                     alt="Affiliate Button"
                     fill
                     className="absolute"
+                    onClick={() => {
+                      navigator.clipboard.writeText(referalLink);
+                      toast.success("Referral Link Copied to Clipboard.", { duration: 3000 });
+                    }}
                   />
                 </div>
               </div>
@@ -147,6 +173,10 @@ export default function Main() {
                     className="absolute"
                     fill
                   />
+                  <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px] text-shadow">
+                    <div>100,000 $PORK REWARD</div>
+                    <div>Wallet: HMXh...WLgJ</div>
+                  </div>
                 </div>
                 <div className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer">
                   <Image
@@ -155,6 +185,10 @@ export default function Main() {
                     className="absolute"
                     fill
                   />
+                  <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px] text-shadow">
+                    <div>100,000 $PORK REWARD</div>
+                    <div>Wallet: HMXh...WLgJ</div>
+                  </div>
                 </div>
                 <div className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer">
                   <Image
@@ -163,6 +197,10 @@ export default function Main() {
                     className="absolute"
                     fill
                   />
+                  <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[18px] text-shadow">
+                    <div>100,000 $PORK REWARD</div>
+                    <div>Wallet: HMXh...WLgJ</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -171,17 +209,23 @@ export default function Main() {
               <div className="relative flex w-[380px] h-[68px] hover:cursor-pointer">
                 <Image
                   src="/images/buttons/documentation.svg"
-                  alt="Main Area"
+                  alt="Documentation"
                   className="absolute"
                   fill
+                  onClick={() => {
+                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                  }}
                 />
               </div>
               <div className="relative flex w-[380px] h-[68px] hover:cursor-pointer">
                 <Image
                   src="/images/buttons/smart_contract.svg"
-                  alt="Main Area"
+                  alt="Smart Contract"
                   className="absolute"
                   fill
+                  onClick={() => {
+                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                  }}
                 />
               </div>
             </div>
@@ -308,17 +352,23 @@ export default function Main() {
               <div className="relative flex w-[180px] h-[28px] hover:cursor-pointer">
                 <Image
                   src="/images/buttons/documentation.svg"
-                  alt="Main Area"
+                  alt="Documentation"
                   className="absolute"
                   fill
+                  onClick={() => {
+                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                  }}
                 />
               </div>
               <div className="relative flex w-[180px] h-[28px] hover:cursor-pointer">
                 <Image
                   src="/images/buttons/smart_contract.svg"
-                  alt="Main Area"
+                  alt="Smart Contract"
                   className="absolute"
                   fill
+                  onClick={() => {
+                    window.open('https://pork-finance.gitbook.io/pork.finance', '_blank');
+                  }}
                 />
               </div>
             </div>
@@ -404,6 +454,9 @@ export default function Main() {
                   alt="Twitter SVG"
                   width={60}
                   height={60}
+                  onClick={() => {
+                    window.open('https://x.com/johnporksolana', '_blank');
+                  }}
                 />
                 <Image
                   src="/images/buttons/telegram.svg"
@@ -411,6 +464,9 @@ export default function Main() {
                   alt="Telegram SVG"
                   width={60}
                   height={60}
+                  onClick={() => {
+                    window.open('https://t.me/johnporkwtf', '_blank');
+                  }}
                 />
               </div>
               <div className="flex gap-[40px]">
@@ -420,6 +476,9 @@ export default function Main() {
                   alt="Website SVG"
                   width={60}
                   height={60}
+                  onClick={() => {
+                    window.open('https://johnpork.wtf/', '_blank');
+                  }}
                 />
                 <Image
                   src="/images/buttons/chart.svg"
@@ -427,6 +486,9 @@ export default function Main() {
                   alt="Chart SVG"
                   width={60}
                   height={60}
+                  onClick={() => {
+                    window.open('https://dexscreener.com/solana/ggt3gs7vszkkljaz3c1jhq5z5yt9mp5qn6uep7adxr2d', '_blank');
+                  }}
                 />
               </div>
             </div>
