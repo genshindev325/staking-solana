@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 
+import { showAddress } from "@/utils/helpers";
+
 const WalletMultiButtonDynamic = dynamic(
   async () =>
     (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -19,6 +21,11 @@ export default function Main() {
   const [depositModal, setDepositModal] = useState(false);
   const [referalLink, setReferalLink] = useState("");
   const [depositAmount, setDepositAmount] = useState("0");
+  const [referrals, setReferrals] = useState<Array<any>>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [tokenPrice, setTokenPrice] = useState(0);
+  const [tokenSupply, setTokenSupply] = useState(0);
 
   const { publicKey } = useWallet();
   const searchParams = useSearchParams();
@@ -27,8 +34,28 @@ export default function Main() {
   useEffect(() => {
     if (publicKey) {
       setReferalLink(`https://pork.finance?ref=${publicKey?.toBase58()}`);
+
+      (async function () {
+        const { data } = await axios.get(
+          `${
+            process.env.NEXT_PUBLIC_BACKEND_API
+          }/api/referral?ref=${publicKey?.toBase58()}`
+        );
+
+        setReferrals(data.referrals);
+      })();
     }
   }, [publicKey]);
+
+  useEffect(() => {
+    (async function () {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
+      );
+      setTokenPrice(data.price);
+      setTokenSupply(data.supply);
+    })();
+  }, []);
 
   const handleDeposit = async () => {
     if (!publicKey) {
@@ -41,6 +68,11 @@ export default function Main() {
       return;
     }
 
+    if (amount < 10000) {
+      toast.error("Minimum deposit is 10,000.", { duration: 3000 });
+    }
+
+    setLoading(true);
     if (referrer) {
       try {
         const { data } = await axios.post(
@@ -48,18 +80,23 @@ export default function Main() {
           {
             referrer,
             user: publicKey?.toBase58(),
-            amount,
+            amount: Math.floor(amount / 5),
           }
         );
 
         console.log(data.msg);
       } catch (err) {}
     }
+    setLoading(false);
+    setDepositModal(false);
   };
 
   return (
     <div>
       <div className="pork-background"></div>
+      {loading && (
+        <img src="/images/loading.gif" className="modal-center w-[80px] z-50" />
+      )}
       <div
         className={
           "flex flex-col w-[380px] xl:w-[1200px] 2xl:w-[1500px] mx-auto" +
@@ -206,43 +243,32 @@ export default function Main() {
                 className="absolute"
                 fill
               />
-              <div className="w-full h-[240px] 2xl:h-[320px] overflow-y-scroll mt-[72px] 2xl:mt-[84px] z-10">
-                <div className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer">
-                  <Image
-                    src="/images/referral_reward.svg"
-                    alt="Referal Reward"
-                    className="absolute"
-                    fill
-                  />
-                  <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px] text-shadow">
-                    <div>100,000 $PORK REWARD</div>
-                    <div>Wallet: HMXh...WLgJ</div>
+              <div className="w-full h-[240px] 2xl:h-[320px] overflow-y-auto mt-[72px] 2xl:mt-[84px] z-10">
+                {referrals.length > 0 ? (
+                  referrals.map((ref, idx) => {
+                    return (
+                      <div
+                        className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer"
+                        key={idx}
+                      >
+                        <Image
+                          src="/images/referral_reward.svg"
+                          alt="Referal Reward"
+                          className="absolute"
+                          fill
+                        />
+                        <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px] text-shadow">
+                          <div>{ref.amount.toLocaleString()} $PORK REWARD</div>
+                          <div>Wallet: {showAddress(ref.user)}</div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-white font-lilitaone text-[40px] 2xl:text-[48px] text-shadow h-full flex items-center justify-center">
+                    No Data
                   </div>
-                </div>
-                <div className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer">
-                  <Image
-                    src="/images/referral_reward.svg"
-                    alt="Referal Reward"
-                    className="absolute"
-                    fill
-                  />
-                  <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px] text-shadow">
-                    <div>100,000 $PORK REWARD</div>
-                    <div>Wallet: HMXh...WLgJ</div>
-                  </div>
-                </div>
-                <div className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer">
-                  <Image
-                    src="/images/referral_reward.svg"
-                    alt="Referal Reward"
-                    className="absolute"
-                    fill
-                  />
-                  <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[18px] text-shadow">
-                    <div>100,000 $PORK REWARD</div>
-                    <div>Wallet: HMXh...WLgJ</div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -402,10 +428,10 @@ export default function Main() {
                 102,890,890 $PORK
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
-                0.002345
+                {tokenPrice}
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
-                $ 8,224,345
+                $ {(tokenPrice * tokenSupply).toLocaleString()}
               </span>
             </div>
             <div className="hidden xl:flex order-3 justify-center">

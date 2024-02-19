@@ -22,9 +22,9 @@ const createReferral = async (req, res) => {
 };
 
 const getReferral = async (req, res) => {
-  const { referrer } = req.body;
+  const { ref } = req.query;
 
-  const referrals = await ReferralModel.find({ referrer });
+  const referrals = await ReferralModel.find({ referrer: ref });
 
   res.json({ referrals });
 };
