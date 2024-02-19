@@ -8,7 +8,7 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 export const metadata: Metadata = {
   title: "Pork Finance",
   description: "Pork Finance",
-  icons: "/images/icon.webp",
+  icons: "/images/icon.png",
 };
 
 export const viewport: Viewport = {
