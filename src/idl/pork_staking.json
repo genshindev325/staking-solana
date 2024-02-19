@@ -230,6 +230,10 @@
             "type": "u64"
           },
           {
+            "name": "claimedAmount",
+            "type": "u64"
+          },
+          {
             "name": "lastDepositTimestamp",
             "type": "i64"
           },
@@ -264,6 +268,6 @@
     }
   ],
   "metadata": {
-    "address": "2vuV5qE78W4gizwb7GBeyX9MtyUd1iFaeMNEYTmzWWAK"
+    "address": "711DVRH3X7Vu3kxneSsV9ZT362hvg29RtEFwbubUALCN"
   }
 }

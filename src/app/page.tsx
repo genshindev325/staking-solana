@@ -79,8 +79,51 @@ export default function Main() {
 
   const [program, setProgram] = useState<Program>();
 
+  // Initialize
+  // useEffect(() => {
+  //   if (wallet && program) {
+  //     (async function () {
+  //       try {
+  //         const [porkStake, bump] = await PublicKey.findProgramAddress(
+  //           [Buffer.from(utils.bytes.utf8.encode("pork"))],
+  //           program.programId
+  //         );
+
+  //         console.log(porkStake.toBase58())
+
+  //         const stakeAta = getAssociatedTokenAddressSync(
+  //           PORK_MINT,
+  //           porkStake,
+  //           true
+  //         );
+
+  //         const transaction = await program.methods
+  //           .initialize()
+  //           .accounts({
+  //             porkMint: PORK_MINT,
+  //             from: wallet.publicKey,
+  //             porkStake: porkStake,
+  //             stakeAta: stakeAta,
+  //             tokenProgram: TOKEN_PROGRAM_ID,
+  //             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //             systemProgram: SystemProgram.programId,
+  //           })
+  //           .transaction();
+
+  //         await sendTransaction(transaction, connection);
+
+  //         console.log(
+  //           `https://solscan.io/token/tx/${transaction}?cluster=devnet`
+  //         );
+  //       } catch(err) {
+  //         console.error(err);
+  //       }
+  //     })();
+  //   }
+  // }, [wallet, program]);
+
   useEffect(() => {
-    if(wallet && referrer == wallet?.publicKey.toBase58()) {
+    if (wallet && referrer == wallet?.publicKey.toBase58()) {
       router.push("/");
     }
   }, [referrer, wallet]);
@@ -117,17 +160,22 @@ export default function Main() {
     }
   }, [wallet]);
 
-  useEffect(() => {
-    updateInfo();
-  }, [wallet, program, refetch]);
+  // useEffect(() => {
+  //   updateInfo();
+  // }, [wallet, program, refetch]);
 
   useEffect(() => {
     (async function () {
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
-      );
-      setTokenPrice(data.price);
-      setTokenSupply(data.supply);
+      try {
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
+        );
+        setTokenPrice(data.price);
+        setTokenSupply(data.supply);
+      } catch (err) {
+        setTokenPrice(0);
+        setTokenSupply(0);
+      }
     })();
   }, []);
 
@@ -154,7 +202,7 @@ export default function Main() {
 
         setTokenTVL(staked);
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       }
       try {
         const [walletUser] = await PublicKey.findProgramAddress(
@@ -188,18 +236,17 @@ export default function Main() {
           setDailyBonus(rewards);
         }
 
-        // setEarnedYield(_walletUser.claimedAmount.div(DECIMALS).toNumber());
-
         claimableAmount += calculateRewards(
           deposited,
           lastDepositedTimestamp,
           currentTimestamp
         );
 
+        setEarnedYield(walletUser.claimedAmount.div(DECIMALS).toNumber());
         setPorkDeposit(deposited);
         setClaimableAmount(claimableAmount);
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       }
 
       setLoading(false);
@@ -713,7 +760,7 @@ export default function Main() {
                     width={166}
                     height={60}
                     onClick={() => {
-                      console.log("kkkk")
+                      console.log("kkkk");
                       handleDeposit();
                     }}
                   />
