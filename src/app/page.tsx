@@ -117,9 +117,9 @@ export default function Main() {
     }
   }, [wallet]);
 
-  // useEffect(() => {
-  //   updateInfo();
-  // }, [wallet, program, refetch]);
+  useEffect(() => {
+    updateInfo();
+  }, [wallet, program, refetch]);
 
   // useEffect(() => {
   //   (async function () {
