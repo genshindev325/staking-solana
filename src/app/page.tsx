@@ -80,47 +80,49 @@ export default function Main() {
   const [program, setProgram] = useState<Program>();
 
   // Initialize
-  // useEffect(() => {
-  //   if (wallet && program) {
-  //     (async function () {
-  //       try {
-  //         const [porkStake, bump] = await PublicKey.findProgramAddress(
-  //           [Buffer.from(utils.bytes.utf8.encode("pork"))],
-  //           program.programId
-  //         );
+  useEffect(() => {
+    if (wallet && program) {
+      (async function () {
+        try {
+          const [porkStake, bump] = await PublicKey.findProgramAddress(
+            [Buffer.from(utils.bytes.utf8.encode("pork"))],
+            program.programId
+          );
 
-  //         console.log(porkStake.toBase58())
 
-  //         const stakeAta = getAssociatedTokenAddressSync(
-  //           PORK_MINT,
-  //           porkStake,
-  //           true
-  //         );
+          const stakeAta = getAssociatedTokenAddressSync(
+            PORK_MINT,
+            porkStake,
+            true
+          );
 
-  //         const transaction = await program.methods
-  //           .initialize()
-  //           .accounts({
-  //             porkMint: PORK_MINT,
-  //             from: wallet.publicKey,
-  //             porkStake: porkStake,
-  //             stakeAta: stakeAta,
-  //             tokenProgram: TOKEN_PROGRAM_ID,
-  //             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-  //             systemProgram: SystemProgram.programId,
-  //           })
-  //           .transaction();
+          console.log(stakeAta.toBase58())
 
-  //         await sendTransaction(transaction, connection);
 
-  //         console.log(
-  //           `https://solscan.io/token/tx/${transaction}?cluster=devnet`
-  //         );
-  //       } catch(err) {
-  //         console.error(err);
-  //       }
-  //     })();
-  //   }
-  // }, [wallet, program]);
+          // const transaction = await program.methods
+          //   .initialize()
+          //   .accounts({
+          //     porkMint: PORK_MINT,
+          //     from: wallet.publicKey,
+          //     porkStake: porkStake,
+          //     stakeAta: stakeAta,
+          //     tokenProgram: TOKEN_PROGRAM_ID,
+          //     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          //     systemProgram: SystemProgram.programId,
+          //   })
+          //   .transaction();
+
+          // await sendTransaction(transaction, connection);
+
+          // console.log(
+          //   `https://solscan.io/token/tx/${transaction}?cluster=devnet`
+          // );
+        } catch(err) {
+          console.error(err);
+        }
+      })();
+    }
+  }, [wallet, program]);
 
   useEffect(() => {
     if (wallet && referrer == wallet?.publicKey.toBase58()) {
@@ -164,20 +166,20 @@ export default function Main() {
   //   updateInfo();
   // }, [wallet, program, refetch]);
 
-  useEffect(() => {
-    (async function () {
-      try {
-        const { data } = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
-        );
-        setTokenPrice(data.price);
-        setTokenSupply(data.supply);
-      } catch (err) {
-        setTokenPrice(0);
-        setTokenSupply(0);
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async function () {
+  //     try {
+  //       const { data } = await axios.get(
+  //         `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
+  //       );
+  //       setTokenPrice(data.price);
+  //       setTokenSupply(data.supply);
+  //     } catch (err) {
+  //       setTokenPrice(0);
+  //       setTokenSupply(0);
+  //     }
+  //   })();
+  // }, []);
 
   useEffect(() => {
     const interval = setInterval(updateInfo, 60000);
@@ -479,7 +481,7 @@ export default function Main() {
         }
       >
         <div className="flex justify-between h-[80px] px-[20px] sm:p-0">
-          <div className="flex xl:hidden">
+          <div className="flex items-center xl:hidden">
             <Image
               src="/images/buttons/hamburger.svg"
               className="hover:cursor-pointer"
@@ -647,8 +649,8 @@ export default function Main() {
               </div>
             </div>
 
-            <div className="flex flex-col xl:hidden order-3 justify-center">
-              <div className="relative flex w-[380px] h-[68px] hover:cursor-pointer">
+            <div className="flex flex-col xl:hidden order-3 justify-center items-center">
+              <div className="relative flex w-[260px] h-[60px] hover:cursor-pointer">
                 <Image
                   src="/images/buttons/documentation.svg"
                   alt="Documentation"
@@ -662,7 +664,7 @@ export default function Main() {
                   }}
                 />
               </div>
-              <div className="relative flex w-[380px] h-[68px] hover:cursor-pointer">
+              <div className="relative flex w-[260px] h-[60px] hover:cursor-pointer">
                 <Image
                   src="/images/buttons/smart_contract.svg"
                   alt="Smart Contract"
@@ -670,7 +672,7 @@ export default function Main() {
                   fill
                   onClick={() => {
                     window.open(
-                      "https://pork-finance.gitbook.io/pork.finance",
+                      "https://pork-finance.gitbook.io/pork.finance/official-links/dapp-contract",
                       "_blank"
                     );
                   }}
@@ -802,19 +804,19 @@ export default function Main() {
                 className="absolute"
                 fill
               />
-              <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[82px] 2xl:ml-[96px] 2xl:mt-[108px]">
-                1000
+              <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[82px] 2xl:ml-[96px] 2xl:mt-[108px]">
+                {claimableAmount.toLocaleString()} $PORK
               </span>
-              <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
+              <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 {porkDeposit.toLocaleString()} $PORK
               </span>
-              <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
+              <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 {tokenTVL.toLocaleString()} $PORK
               </span>
-              <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
+              <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 {tokenPrice}
               </span>
-              <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
+              <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 $ {(tokenPrice * tokenSupply).toLocaleString()}
               </span>
             </div>
@@ -841,7 +843,7 @@ export default function Main() {
                   fill
                   onClick={() => {
                     window.open(
-                      "https://pork-finance.gitbook.io/pork.finance",
+                      "https://pork-finance.gitbook.io/pork.finance/official-links/dapp-contract",
                       "_blank"
                     );
                   }}
@@ -881,9 +883,9 @@ export default function Main() {
                 onChange={(e) => {
                   setDepositAmount(e.target.value);
                 }}
-                className="text-black indent-2 h-[50px] w-[340px] text-[20px] mt-[12px]"
+                className="text-black indent-2 h-[50px] w-[340px] text-[20px] mt-[24px]"
               />
-              <div className="flex gap-[12px] mt-[12px]">
+              <div className="flex gap-[12px] mt-[24px]">
                 <Image
                   src="/images/modal/deposit_pork.svg"
                   alt="Deposit"
@@ -908,10 +910,10 @@ export default function Main() {
                   }}
                 />
               </div>
-              <span className="text-[10px] text-center font-thin">
+              {/* <span className="text-[10px] text-center font-thin">
                 Text: 2% daily claimable and compoundable yield based on $PORK
                 deposited. Deposits are non-withdrawable.
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
