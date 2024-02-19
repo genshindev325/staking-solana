@@ -242,7 +242,7 @@ export default function Main() {
           currentTimestamp
         );
 
-        setEarnedYield(walletUser.claimedAmount.div(DECIMALS).toNumber());
+        setEarnedYield(userData.claimedAmount.div(DECIMALS).toNumber());
         setPorkDeposit(deposited);
         setClaimableAmount(claimableAmount);
       } catch (err) {
