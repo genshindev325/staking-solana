@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import {
@@ -36,7 +37,11 @@ import {
   DECIMALS,
 } from "@/utils/constants";
 
-import { calculateRewards, showAddress } from "@/utils/helpers";
+import {
+  calculateRewards,
+  showAddress,
+  calculateBiggerHolderRewards,
+} from "@/utils/helpers";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -50,9 +55,13 @@ export default function Main() {
   const [referalLink, setReferalLink] = useState("");
   const [depositAmount, setDepositAmount] = useState("0");
   const [referrals, setReferrals] = useState<Array<any>>([]);
+
+  const [refetch, setRefetch] = useState(false);
+
   const [porkDeposit, setPorkDeposit] = useState(0);
   const [earnedYield, setEarnedYield] = useState(0);
   const [claimableAmount, setClaimableAmount] = useState(0);
+  const [dailyBonus, setDailyBonus] = useState(0);
 
   const [tokenTVL, setTokenTVL] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -63,10 +72,18 @@ export default function Main() {
   const wallet = useAnchorWallet();
   const { sendTransaction } = useWallet();
   const { connection } = useConnection();
+
+  const router = useRouter();
   const searchParams = useSearchParams();
   const referrer = searchParams.get("ref");
 
   const [program, setProgram] = useState<Program>();
+
+  useEffect(() => {
+    if(wallet && referrer == wallet?.publicKey.toBase58()) {
+      router.push("/");
+    }
+  }, [referrer, wallet]);
 
   useEffect(() => {
     if (wallet) {
@@ -76,6 +93,18 @@ export default function Main() {
 
       (async function () {
         try {
+          let provider: Provider;
+
+          try {
+            provider = getProvider();
+          } catch {
+            provider = new AnchorProvider(connection, wallet, {});
+            setProvider(provider);
+          }
+
+          const program = new Program(IDL as Idl, PROGRAM_ID);
+          setProgram(program);
+
           const { data } = await axios.get(
             `${
               process.env.NEXT_PUBLIC_BACKEND_API
@@ -90,7 +119,7 @@ export default function Main() {
 
   useEffect(() => {
     updateInfo();
-  }, [wallet]);
+  }, [wallet, program, refetch]);
 
   useEffect(() => {
     (async function () {
@@ -103,26 +132,31 @@ export default function Main() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(updateInfo, 60000); 
+    const interval = setInterval(updateInfo, 60000);
 
     return () => clearInterval(interval);
-  }, []); 
+  }, []);
 
   const updateInfo = async () => {
-    if (wallet) {
+    if (wallet && program) {
+      setLoading(true);
+
+      let staked = 0;
+
       try {
-        let provider: Provider;
+        const [porkStake] = await PublicKey.findProgramAddress(
+          [Buffer.from(utils.bytes.utf8.encode("pork"))],
+          program.programId
+        );
 
-        try {
-          provider = getProvider();
-        } catch {
-          provider = new AnchorProvider(connection, wallet, {});
-          setProvider(provider);
-        }
+        const stakeData = await program.account.porkStake.fetch(porkStake);
+        staked = stakeData.totalAmount.div(DECIMALS).toNumber();
 
-        const program = new Program(IDL as Idl, PROGRAM_ID);
-        setProgram(program);
-
+        setTokenTVL(staked);
+      } catch (err) {
+        console.error(err);
+      }
+      try {
         const [walletUser] = await PublicKey.findProgramAddress(
           [
             Buffer.from(utils.bytes.utf8.encode("porkuser")),
@@ -131,33 +165,44 @@ export default function Main() {
           program.programId
         );
 
-        const [porkStake] = await PublicKey.findProgramAddress(
-          [Buffer.from(utils.bytes.utf8.encode("pork"))],
-          program.programId
-        );
-
         const userData = await program.account.porkUser.fetch(walletUser);
 
         const deposited = userData.depostedAmount.div(DECIMALS).toNumber();
+
         const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
-
-        // setEarnedYield(_walletUser.claimedAmount.div(DECIMALS).toNumber());
-
-        const stakeData = await program.account.porkStake.fetch(porkStake);
+        let claimableAmount = userData.claimableAmount.div(DECIMALS).toNumber();
+        const biggerHolderTimestamp = userData.biggerHolderTimestamp.toNumber();
+        const timesOfBiggerHolder = userData.timesOfBiggerHolder.toNumber();
 
         const currentTimestamp = Math.floor(new Date().getTime() / 1000);
 
-        const claimable = calculateRewards(
+        if (timesOfBiggerHolder > 0) {
+          const rewards = calculateBiggerHolderRewards(
+            staked,
+            timesOfBiggerHolder,
+            biggerHolderTimestamp,
+            currentTimestamp
+          );
+          claimableAmount += rewards;
+          console.log(rewards);
+          setDailyBonus(rewards);
+        }
+
+        // setEarnedYield(_walletUser.claimedAmount.div(DECIMALS).toNumber());
+
+        claimableAmount += calculateRewards(
           deposited,
           lastDepositedTimestamp,
           currentTimestamp
         );
 
-        setPorkDeposit(Math.floor(deposited));
-        setTokenTVL(Math.floor(stakeData.totalAmount.div(DECIMALS).toNumber()));
+        setPorkDeposit(deposited);
+        setClaimableAmount(claimableAmount);
+      } catch (err) {
+        console.error(err);
+      }
 
-        setClaimableAmount(claimable);
-      } catch (err) {}
+      setLoading(false);
     }
   };
 
@@ -174,6 +219,7 @@ export default function Main() {
 
     if (amount < 10000) {
       toast.error("Minimum deposit is 10,000.", { duration: 3000 });
+      return;
     }
 
     setLoading(true);
@@ -216,6 +262,13 @@ export default function Main() {
       );
     }
 
+    let firstDeposit = false;
+    try {
+      const userData = await program.account.porkUser.fetch(walletUser);
+    } catch (err) {
+      firstDeposit = true;
+    }
+
     try {
       const deposit = new BN(amount).mul(DECIMALS);
 
@@ -241,22 +294,125 @@ export default function Main() {
 
       await sendTransaction(transaction, connection);
 
-      console.log(deposit);
-
-      console.log(transaction);
       if (referrer) {
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/referral`,
-          {
-            referrer,
-            user: wallet?.publicKey?.toBase58(),
-            amount: Math.floor(amount / 5),
-          }
-        );
-
-        console.log(data.msg);
+        if (firstDeposit) {
+          const { data } = await axios.post(
+            `${process.env.NEXT_PUBLIC_BACKEND_API}/api/referral`,
+            {
+              referrer,
+              user: wallet?.publicKey?.toBase58(),
+              amount: Math.floor((amount * 95) / 500),
+            }
+          );
+        }
       }
+
+      toast.success("Successfully Deposited.", { duration: 3000 });
+      setRefetch((prev) => !prev);
     } catch (err) {
+      console.error(err);
+      toast.error("Failed to Deposit.", { duration: 3000 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClaim = async () => {
+    if (!wallet || !program) {
+      return;
+    }
+
+    setLoading(true);
+
+    const walletAta = getAssociatedTokenAddressSync(
+      PORK_MINT,
+      wallet.publicKey
+    );
+
+    const treasuryAta = getAssociatedTokenAddressSync(
+      PORK_MINT,
+      TREASURY_ADDRESS
+    );
+
+    const [porkStake, bump] = await PublicKey.findProgramAddress(
+      [Buffer.from(utils.bytes.utf8.encode("pork"))],
+      program.programId
+    );
+
+    const stakeAta = getAssociatedTokenAddressSync(PORK_MINT, porkStake, true);
+
+    const [walletUser] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(utils.bytes.utf8.encode("porkuser")),
+        wallet.publicKey.toBuffer(),
+      ],
+      program.programId
+    );
+
+    try {
+      const transaction = await program.methods
+        .cashout(bump)
+        .accounts({
+          to: wallet.publicKey,
+          porkMint: PORK_MINT,
+          toAta: walletAta,
+          porkStake: porkStake,
+          stakeAta: stakeAta,
+          porkUser: walletUser,
+          treasuryAta: treasuryAta,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .transaction();
+
+      await sendTransaction(transaction, connection);
+      toast.success("Successfully Claimed.", { duration: 3000 });
+      setRefetch((prev) => !prev);
+    } catch (err) {
+      toast.error("Failed to Claim.", { duration: 3000 });
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompound = async () => {
+    if (!wallet || !program) {
+      return;
+    }
+
+    setLoading(true);
+
+    const [porkStake] = await PublicKey.findProgramAddress(
+      [Buffer.from(utils.bytes.utf8.encode("pork"))],
+      program.programId
+    );
+
+    const [walletUser] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(utils.bytes.utf8.encode("porkuser")),
+        wallet.publicKey.toBuffer(),
+      ],
+      program.programId
+    );
+
+    try {
+      const transaction = await program.methods
+        .compound()
+        .accounts({
+          signer: wallet.publicKey,
+          porkStake: porkStake,
+          porkUser: walletUser,
+          systemProgram: SystemProgram.programId,
+        })
+        .transaction();
+
+      await sendTransaction(transaction, connection);
+      toast.success("Successfully Compounded.", { duration: 3000 });
+      setRefetch((prev) => !prev);
+    } catch (err) {
+      toast.error("Failed to Compound.", { duration: 3000 });
       console.error(err);
     } finally {
       setLoading(false);
@@ -492,7 +648,7 @@ export default function Main() {
                   fill
                 />
                 <span className="text-white font-lilitaone text-[48px] z-10 text-shadow">
-                  {claimableAmount.toFixed(2)}
+                  {claimableAmount.toLocaleString()}
                 </span>
               </div>
               <div className="relative flex w-[340px] h-[62px] 2xl:w-[420px] 2xl:h-[80px] hover:cursor-pointer">
@@ -501,6 +657,9 @@ export default function Main() {
                   alt="Claim Pork"
                   className="absolute"
                   fill
+                  onClick={() => {
+                    handleClaim();
+                  }}
                 />
               </div>
               <div className="relative flex w-[340px] h-[62px] 2xl:w-[420px] 2xl:h-[80px] hover:cursor-pointer">
@@ -509,6 +668,9 @@ export default function Main() {
                   alt="Compound Gains"
                   className="absolute"
                   fill
+                  onClick={() => {
+                    handleCompound();
+                  }}
                 />
               </div>
             </div>
@@ -520,7 +682,9 @@ export default function Main() {
                 fill
               />
               <span className="text-white font-lilitaone text-[24px] z-10 text-shadow mt-[60px] 2xl:mt-[80px]">
-                10,289,080 $PORK
+                {dailyBonus == 0
+                  ? "LOCKED"
+                  : `${dailyBonus.toLocaleString()} $PORK`}
               </span>
             </div>
             <div className="relative xl:hidden flex w-[380px] h-[240px]">
@@ -549,6 +713,7 @@ export default function Main() {
                     width={166}
                     height={60}
                     onClick={() => {
+                      console.log("kkkk")
                       handleDeposit();
                     }}
                   />
@@ -591,7 +756,7 @@ export default function Main() {
                 fill
               />
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[82px] 2xl:ml-[96px] 2xl:mt-[108px]">
-                102,890,890 $PORK
+                1000
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 {porkDeposit.toLocaleString()} $PORK

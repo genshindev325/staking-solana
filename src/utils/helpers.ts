@@ -13,3 +13,12 @@ export const calculateRewards = (amount: number, lastDepositTimestamp: number, c
 
   return reward;
 }
+
+export const calculateBiggerHolderRewards = (tvl: number, timesOfBiggerHolder: number, biggerHolderTimestamp: number, currentTimeStamp: number) => {
+
+  const timeDiff = currentTimeStamp - biggerHolderTimestamp;
+
+  const reward = (tvl * 5 / 100_000) * timeDiff / (60 * 60 * 24);
+
+  return reward;
+}
