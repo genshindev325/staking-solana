@@ -79,51 +79,6 @@ export default function Main() {
 
   const [program, setProgram] = useState<Program>();
 
-  // Initialize
-  useEffect(() => {
-    if (wallet && program) {
-      (async function () {
-        try {
-          const [porkStake, bump] = await PublicKey.findProgramAddress(
-            [Buffer.from(utils.bytes.utf8.encode("pork"))],
-            program.programId
-          );
-
-
-          const stakeAta = getAssociatedTokenAddressSync(
-            PORK_MINT,
-            porkStake,
-            true
-          );
-
-          console.log(stakeAta.toBase58())
-
-
-          // const transaction = await program.methods
-          //   .initialize()
-          //   .accounts({
-          //     porkMint: PORK_MINT,
-          //     from: wallet.publicKey,
-          //     porkStake: porkStake,
-          //     stakeAta: stakeAta,
-          //     tokenProgram: TOKEN_PROGRAM_ID,
-          //     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-          //     systemProgram: SystemProgram.programId,
-          //   })
-          //   .transaction();
-
-          // await sendTransaction(transaction, connection);
-
-          // console.log(
-          //   `https://solscan.io/token/tx/${transaction}?cluster=devnet`
-          // );
-        } catch(err) {
-          console.error(err);
-        }
-      })();
-    }
-  }, [wallet, program]);
-
   useEffect(() => {
     if (wallet && referrer == wallet?.publicKey.toBase58()) {
       router.push("/");
@@ -187,6 +142,44 @@ export default function Main() {
     return () => clearInterval(interval);
   }, []);
 
+  const initilize = async () => {
+    if (program && wallet) {
+      try {
+        const [porkStake, bump] = await PublicKey.findProgramAddress(
+          [Buffer.from(utils.bytes.utf8.encode("pork"))],
+          program.programId
+        );
+
+        const stakeAta = getAssociatedTokenAddressSync(
+          PORK_MINT,
+          porkStake,
+          true
+        );
+
+        console.log(PORK_MINT?.toBase58())
+        const transaction = await program.methods
+          .initialize()
+          .accounts({
+            porkMint: PORK_MINT,
+            from: wallet.publicKey,
+            porkStake: porkStake,
+            stakeAta: stakeAta,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .transaction();
+
+        await sendTransaction(transaction, connection);
+
+        console.log(
+          `https://solscan.io/token/tx/${transaction}?cluster=devnet`
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
   const updateInfo = async () => {
     if (wallet && program) {
       setLoading(true);
@@ -718,7 +711,8 @@ export default function Main() {
                   className="absolute"
                   fill
                   onClick={() => {
-                    handleCompound();
+                    initilize();
+                    // handleCompound();
                   }}
                 />
               </div>

@@ -5,7 +5,7 @@ const RPC_ENDPOINT = process.env.NEXT_PUBLIC_RPC as string;
 
 const PORK_MINT = new PublicKey(process.env.NEXT_PUBLIC_PORK_MINT as string);
 
-const PROGRAM_ID = "7a2ExM7n8CSK2ai1JzsP5pzGrvauy2BZ9kUmZA3zQTs6";
+const PROGRAM_ID = "FhWWsKM5erDU1xbhkpZayeieAXhGXauKZWKmRjEL9BZW";
 
 const TREASURY_ADDRESS = new PublicKey("HMXh8po6J3c319NeqkXMrJYDJnTK69fvDhK5p6KDWLgJ");
 
