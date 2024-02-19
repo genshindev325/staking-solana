@@ -5,10 +5,38 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
-import { useWallet } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
 import axios from "axios";
+import IDL from "../idl/pork_staking.json";
+import {
+  Program,
+  AnchorProvider,
+  setProvider,
+  getProvider,
+  Idl,
+  utils,
+  BN,
+  Provider,
+} from "@project-serum/anchor";
+import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
 
-import { showAddress } from "@/utils/helpers";
+import {
+  TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
+import {
+  PROGRAM_ID,
+  PORK_MINT,
+  TREASURY_ADDRESS,
+  DECIMALS,
+} from "@/utils/constants";
+
+import { calculateRewards, showAddress } from "@/utils/helpers";
 
 const WalletMultiButtonDynamic = dynamic(
   async () =>
@@ -22,30 +50,47 @@ export default function Main() {
   const [referalLink, setReferalLink] = useState("");
   const [depositAmount, setDepositAmount] = useState("0");
   const [referrals, setReferrals] = useState<Array<any>>([]);
+  const [porkDeposit, setPorkDeposit] = useState(0);
+  const [earnedYield, setEarnedYield] = useState(0);
+  const [claimableAmount, setClaimableAmount] = useState(0);
+
+  const [tokenTVL, setTokenTVL] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const [tokenPrice, setTokenPrice] = useState(0);
   const [tokenSupply, setTokenSupply] = useState(0);
 
-  const { publicKey } = useWallet();
+  const wallet = useAnchorWallet();
+  const { sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const searchParams = useSearchParams();
   const referrer = searchParams.get("ref");
 
+  const [program, setProgram] = useState<Program>();
+
   useEffect(() => {
-    if (publicKey) {
-      setReferalLink(`https://pork.finance?ref=${publicKey?.toBase58()}`);
+    if (wallet) {
+      setReferalLink(
+        `https://pork.finance?ref=${wallet?.publicKey?.toBase58()}`
+      );
 
       (async function () {
-        const { data } = await axios.get(
-          `${
-            process.env.NEXT_PUBLIC_BACKEND_API
-          }/api/referral?ref=${publicKey?.toBase58()}`
-        );
+        try {
+          const { data } = await axios.get(
+            `${
+              process.env.NEXT_PUBLIC_BACKEND_API
+            }/api/referral?ref=${wallet?.publicKey?.toBase58()}`
+          );
 
-        setReferrals(data.referrals);
+          setReferrals(data.referrals);
+        } catch (err) {}
       })();
     }
-  }, [publicKey]);
+  }, [wallet]);
+
+  useEffect(() => {
+    updateInfo();
+  }, [wallet]);
 
   useEffect(() => {
     (async function () {
@@ -57,8 +102,67 @@ export default function Main() {
     })();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(updateInfo, 60000); 
+
+    return () => clearInterval(interval);
+  }, []); 
+
+  const updateInfo = async () => {
+    if (wallet) {
+      try {
+        let provider: Provider;
+
+        try {
+          provider = getProvider();
+        } catch {
+          provider = new AnchorProvider(connection, wallet, {});
+          setProvider(provider);
+        }
+
+        const program = new Program(IDL as Idl, PROGRAM_ID);
+        setProgram(program);
+
+        const [walletUser] = await PublicKey.findProgramAddress(
+          [
+            Buffer.from(utils.bytes.utf8.encode("porkuser")),
+            wallet.publicKey.toBuffer(),
+          ],
+          program.programId
+        );
+
+        const [porkStake] = await PublicKey.findProgramAddress(
+          [Buffer.from(utils.bytes.utf8.encode("pork"))],
+          program.programId
+        );
+
+        const userData = await program.account.porkUser.fetch(walletUser);
+
+        const deposited = userData.depostedAmount.div(DECIMALS).toNumber();
+        const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
+
+        // setEarnedYield(_walletUser.claimedAmount.div(DECIMALS).toNumber());
+
+        const stakeData = await program.account.porkStake.fetch(porkStake);
+
+        const currentTimestamp = Math.floor(new Date().getTime() / 1000);
+
+        const claimable = calculateRewards(
+          deposited,
+          lastDepositedTimestamp,
+          currentTimestamp
+        );
+
+        setPorkDeposit(Math.floor(deposited));
+        setTokenTVL(Math.floor(stakeData.totalAmount.div(DECIMALS).toNumber()));
+
+        setClaimableAmount(claimable);
+      } catch (err) {}
+    }
+  };
+
   const handleDeposit = async () => {
-    if (!publicKey) {
+    if (!wallet || !program) {
       return;
     }
 
@@ -73,22 +177,90 @@ export default function Main() {
     }
 
     setLoading(true);
+    setDepositModal(false);
+
+    const walletAta = getAssociatedTokenAddressSync(
+      PORK_MINT,
+      wallet.publicKey
+    );
+
+    const treasuryAta = getAssociatedTokenAddressSync(
+      PORK_MINT,
+      TREASURY_ADDRESS
+    );
+
+    const [porkStake] = await PublicKey.findProgramAddress(
+      [Buffer.from(utils.bytes.utf8.encode("pork"))],
+      program.programId
+    );
+
+    const stakeAta = getAssociatedTokenAddressSync(PORK_MINT, porkStake, true);
+
+    const [walletUser] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from(utils.bytes.utf8.encode("porkuser")),
+        wallet.publicKey.toBuffer(),
+      ],
+      program.programId
+    );
+
+    let referralUser: any = null;
+
     if (referrer) {
-      try {
+      [referralUser] = await PublicKey.findProgramAddress(
+        [
+          Buffer.from(utils.bytes.utf8.encode("porkuser")),
+          new PublicKey(referrer).toBuffer(),
+        ],
+        program.programId
+      );
+    }
+
+    try {
+      const deposit = new BN(amount).mul(DECIMALS);
+
+      const randomKp = new Keypair();
+
+      const transaction = await program.methods
+        .deposit(deposit)
+        .accounts({
+          porkMint: PORK_MINT,
+          from: wallet.publicKey,
+          fromAta: walletAta,
+          porkStake: porkStake,
+          stakeAta: stakeAta,
+          porkUser: walletUser,
+          referral: referrer ? new PublicKey(referrer) : randomKp.publicKey,
+          referralUser: referralUser,
+          treasuryAta: treasuryAta,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .transaction();
+
+      await sendTransaction(transaction, connection);
+
+      console.log(deposit);
+
+      console.log(transaction);
+      if (referrer) {
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_BACKEND_API}/api/referral`,
           {
             referrer,
-            user: publicKey?.toBase58(),
+            user: wallet?.publicKey?.toBase58(),
             amount: Math.floor(amount / 5),
           }
         );
 
         console.log(data.msg);
-      } catch (err) {}
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    setDepositModal(false);
   };
 
   return (
@@ -100,7 +272,7 @@ export default function Main() {
       <div
         className={
           "flex flex-col w-[380px] xl:w-[1200px] 2xl:w-[1500px] mx-auto" +
-          (mobileMenu || depositModal ? " blur" : "")
+          (mobileMenu || depositModal || loading ? " blur" : "")
         }
       >
         <div className="flex justify-between h-[80px] px-[20px] sm:p-0">
@@ -320,7 +492,7 @@ export default function Main() {
                   fill
                 />
                 <span className="text-white font-lilitaone text-[48px] z-10 text-shadow">
-                  102,890
+                  {claimableAmount.toFixed(2)}
                 </span>
               </div>
               <div className="relative flex w-[340px] h-[62px] 2xl:w-[420px] 2xl:h-[80px] hover:cursor-pointer">
@@ -422,10 +594,10 @@ export default function Main() {
                 102,890,890 $PORK
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
-                102,890,890 $PORK
+                {porkDeposit.toLocaleString()} $PORK
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
-                102,890,890 $PORK
+                {tokenTVL.toLocaleString()} $PORK
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 text-shadow ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 {tokenPrice}
