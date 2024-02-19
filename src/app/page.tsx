@@ -156,7 +156,7 @@ export default function Main() {
           true
         );
 
-        console.log(PORK_MINT?.toBase58())
+        console.log(PORK_MINT?.toBase58());
         const transaction = await program.methods
           .initialize()
           .accounts({
@@ -350,7 +350,9 @@ export default function Main() {
       }
 
       toast.success("Successfully Deposited.", { duration: 3000 });
-      setRefetch((prev) => !prev);
+      setTimeout(() => {
+        setRefetch((prev) => !prev);
+      }, 1000);
     } catch (err) {
       console.error(err);
       toast.error("Failed to Deposit.", { duration: 3000 });
@@ -363,8 +365,6 @@ export default function Main() {
     if (!wallet || !program) {
       return;
     }
-
-    setLoading(true);
 
     const walletAta = getAssociatedTokenAddressSync(
       PORK_MINT,
@@ -391,6 +391,23 @@ export default function Main() {
       program.programId
     );
 
+    let canClaimOrCompound = false;
+    try {
+      const userData = await program.account.porkUser.fetch(walletUser);
+      const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
+      const timeDiff = ((new Date()).getTime() / 1000) - lastDepositedTimestamp;
+      if(timeDiff >= 3600) {
+        canClaimOrCompound = true;
+      }
+    } catch (err) {}
+
+    if (!canClaimOrCompound) {
+      toast.error("You can claim or compound every hour.", { duration: 3000 });
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const transaction = await program.methods
         .cashout(bump)
@@ -410,7 +427,9 @@ export default function Main() {
 
       await sendTransaction(transaction, connection);
       toast.success("Successfully Claimed.", { duration: 3000 });
-      setRefetch((prev) => !prev);
+      setTimeout(() => {
+        setRefetch((prev) => !prev);
+      }, 1000);
     } catch (err) {
       toast.error("Failed to Claim.", { duration: 3000 });
       console.error(err);
@@ -423,8 +442,6 @@ export default function Main() {
     if (!wallet || !program) {
       return;
     }
-
-    setLoading(true);
 
     const [porkStake] = await PublicKey.findProgramAddress(
       [Buffer.from(utils.bytes.utf8.encode("pork"))],
@@ -439,6 +456,23 @@ export default function Main() {
       program.programId
     );
 
+    let canClaimOrCompound = false;
+    try {
+      const userData = await program.account.porkUser.fetch(walletUser);
+      const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
+      const timeDiff = ((new Date()).getTime() / 1000) - lastDepositedTimestamp;
+      if(timeDiff >= 3600) {
+        canClaimOrCompound = true;
+      }
+    } catch (err) {}
+
+    if (!canClaimOrCompound) {
+      toast.error("You can claim or compound every hour.", { duration: 3000 });
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const transaction = await program.methods
         .compound()
@@ -452,7 +486,9 @@ export default function Main() {
 
       await sendTransaction(transaction, connection);
       toast.success("Successfully Compounded.", { duration: 3000 });
-      setRefetch((prev) => !prev);
+      setTimeout(() => {
+        setRefetch((prev) => !prev);
+      }, 1000);
     } catch (err) {
       toast.error("Failed to Compound.", { duration: 3000 });
       console.error(err);
@@ -711,8 +747,8 @@ export default function Main() {
                   className="absolute"
                   fill
                   onClick={() => {
-                    initilize();
-                    // handleCompound();
+                    // initilize();
+                    handleCompound();
                   }}
                 />
               </div>
@@ -799,7 +835,7 @@ export default function Main() {
                 fill
               />
               <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[82px] 2xl:ml-[96px] 2xl:mt-[108px]">
-                {claimableAmount.toLocaleString()} $PORK
+                {earnedYield.toLocaleString()} $PORK
               </span>
               <span className="text-white font-lilitaone text-[20px] z-10 ml-[76px] mt-[38px] 2xl:ml-[96px] 2xl:mt-[56px]">
                 {porkDeposit.toLocaleString()} $PORK
@@ -877,9 +913,9 @@ export default function Main() {
                 onChange={(e) => {
                   setDepositAmount(e.target.value);
                 }}
-                className="text-black indent-2 h-[50px] w-[340px] text-[20px] mt-[24px]"
+                className="text-black indent-2 h-[50px] w-[340px] text-[20px] mt-[12px]"
               />
-              <div className="flex gap-[12px] mt-[24px]">
+              <div className="flex gap-[12px] mt-[12px]">
                 <Image
                   src="/images/modal/deposit_pork.svg"
                   alt="Deposit"
@@ -904,10 +940,10 @@ export default function Main() {
                   }}
                 />
               </div>
-              {/* <span className="text-[10px] text-center font-thin">
+              <span className="text-[10px] text-center font-thin">
                 Text: 2% daily claimable and compoundable yield based on $PORK
                 deposited. Deposits are non-withdrawable.
-              </span> */}
+              </span>
             </div>
           </div>
         </div>
