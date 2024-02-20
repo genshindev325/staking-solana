@@ -226,7 +226,11 @@ export default function Main() {
         setPorkDeposit(deposited);
         setClaimableAmount(claimableAmount);
       } catch (err) {
-        console.error(err);
+        // console.error(err);
+        setEarnedYield(0);
+        setPorkDeposit(0);
+        setClaimableAmount(0);
+        setDailyBonus(0);
       }
 
       try {
@@ -247,6 +251,10 @@ export default function Main() {
       return;
     }
 
+    if (wallet.publicKey.toBase58() == referrer) {
+      return;
+    }
+
     const amount = parseFloat(depositAmount);
 
     if (!amount) {
@@ -258,13 +266,30 @@ export default function Main() {
       return;
     }
 
-    setLoading(true);
-    setDepositModal(false);
-
     const walletAta = getAssociatedTokenAddressSync(
       PORK_MINT,
       wallet.publicKey
     );
+
+    try {
+      const info = await connection.getTokenAccountBalance(walletAta);
+
+      if (!info.value.uiAmount) {
+        toast.error("You have No $PORK Token.", { duration: 3000 });
+        return;
+      }
+
+      if (info.value.uiAmount < amount) {
+        toast.error("You don't have enough $PORK Tokens.", { duration: 3000 });
+        return;
+      }
+    } catch (err) {
+      toast.error("You have No $PORK Token.", { duration: 3000 });
+      return;
+    }
+
+    setLoading(true);
+    setDepositModal(false);
 
     const treasuryAta = getAssociatedTokenAddressSync(
       PORK_MINT,
