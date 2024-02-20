@@ -632,7 +632,7 @@ export default function Main() {
               />
               <div className="text-white z-10 font-lilitaone flex flex-col items-center w-full p-[12px]">
                 <div className="text-[28px] 2xl:text-[32px]">
-                  INSTANT 20% REFERAL
+                  INSTANT 20% REFERRAL
                 </div>
                 <div className="text-[14px] 2xl:text-[18px] text-center px-[12px]">
                   INSTANTLY GET 20% OF THE USER'S FIRST DEPOSIT WHEN THEY USE
