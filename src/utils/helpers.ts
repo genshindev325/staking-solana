@@ -22,3 +22,34 @@ export const calculateBiggerHolderRewards = (tvl: number, timesOfBiggerHolder: n
 
   return reward;
 }
+
+// const initilize = async () => {
+//   if (program && wallet) {
+//     try {
+//       const stakeAta = getAssociatedTokenAddressSync(
+//         PORK_MINT,
+//         PORK_STAKE,
+//         true
+//       );
+
+//       const transaction = await program.methods
+//         .initialize()
+//         .accounts({
+//           porkMint: PORK_MINT,
+//           from: wallet.publicKey,
+//           porkStake: PORK_STAKE,
+//           stakeAta: stakeAta,
+//           tokenProgram: TOKEN_PROGRAM_ID,
+//           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+//           systemProgram: SystemProgram.programId,
+//         })
+//         .transaction();
+
+//       const txId = await sendTransaction(transaction, connection);
+
+//       console.log(`https://solscan.io/tx/${txId}`);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }
+// };

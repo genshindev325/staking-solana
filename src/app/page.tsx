@@ -33,8 +33,10 @@ import {
 import {
   PROGRAM_ID,
   PORK_MINT,
+  PORK_STAKE,
   TREASURY_ADDRESS,
   DECIMALS,
+  PORK_BUMP,
 } from "@/utils/constants";
 
 import {
@@ -55,7 +57,6 @@ export default function Main() {
   const [referalLink, setReferalLink] = useState("");
   const [depositAmount, setDepositAmount] = useState("0");
   const [referrals, setReferrals] = useState<Array<any>>([]);
-
   const [refetch, setRefetch] = useState(false);
 
   const [porkDeposit, setPorkDeposit] = useState(0);
@@ -78,6 +79,10 @@ export default function Main() {
   const referrer = searchParams.get("ref");
 
   const [program, setProgram] = useState<Program>();
+  const [porkUser, setPorkUser] = useState<PublicKey>();
+
+  const [counter, setCounter] = useState(0);
+  const [porkUserData, setPorkUserData] = useState<any>(null);
 
   useEffect(() => {
     if (wallet && referrer == wallet?.publicKey.toBase58()) {
@@ -92,18 +97,27 @@ export default function Main() {
       );
 
       (async function () {
+        let provider: Provider;
         try {
-          let provider: Provider;
+          provider = getProvider();
+        } catch {
+          provider = new AnchorProvider(connection, wallet, {});
+          setProvider(provider);
+        }
 
-          try {
-            provider = getProvider();
-          } catch {
-            provider = new AnchorProvider(connection, wallet, {});
-            setProvider(provider);
-          }
-
+        try {
           const program = new Program(IDL as Idl, PROGRAM_ID);
           setProgram(program);
+
+          const [walletUser] = await PublicKey.findProgramAddress(
+            [
+              Buffer.from(utils.bytes.utf8.encode("porkuser")),
+              wallet.publicKey.toBuffer(),
+            ],
+            program.programId
+          );
+
+          setPorkUser(walletUser);
 
           const { data } = await axios.get(
             `${
@@ -113,6 +127,17 @@ export default function Main() {
 
           setReferrals(data.referrals);
         } catch (err) {}
+
+        try {
+          const { data } = await axios.get(
+            `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
+          );
+          setTokenPrice(data.price);
+          setTokenSupply(data.supply);
+        } catch (err) {
+          setTokenPrice(0);
+          setTokenSupply(0);
+        }
       })();
     }
   }, [wallet]);
@@ -124,48 +149,44 @@ export default function Main() {
   }, [wallet, program, refetch]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (program) {
-        updateInfo(program);
-      }
-    }, 60000);
+    updateCounter();
+    setTimeout(() => {
+      setCounter((prev) => prev + 1);
+    }, 1000);
+  }, [counter]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const updateCounter = () => {
+    if (porkUserData) {
+      const deposited = porkUserData.depostedAmount.div(DECIMALS).toNumber();
 
-  const initilize = async () => {
-    if (program && wallet) {
-      try {
-        const [porkStake, bump] = await PublicKey.findProgramAddress(
-          [Buffer.from(utils.bytes.utf8.encode("pork"))],
-          program.programId
+      const lastDepositedTimestamp =
+        porkUserData.lastDepositTimestamp.toNumber();
+      let claimableAmount = porkUserData.claimableAmount
+        .div(DECIMALS)
+        .toNumber();
+      const biggerHolderTimestamp =
+        porkUserData.biggerHolderTimestamp.toNumber();
+      const timesOfBiggerHolder = porkUserData.timesOfBiggerHolder.toNumber();
+
+      const currentTimestamp = Math.floor(new Date().getTime() / 1000);
+
+      if (timesOfBiggerHolder > 0) {
+        const rewards = calculateBiggerHolderRewards(
+          tokenTVL,
+          timesOfBiggerHolder,
+          biggerHolderTimestamp,
+          currentTimestamp
         );
-
-        const stakeAta = getAssociatedTokenAddressSync(
-          PORK_MINT,
-          porkStake,
-          true
-        );
-
-        const transaction = await program.methods
-          .initialize()
-          .accounts({
-            porkMint: PORK_MINT,
-            from: wallet.publicKey,
-            porkStake: porkStake,
-            stakeAta: stakeAta,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            systemProgram: SystemProgram.programId,
-          })
-          .transaction();
-
-        const txId = await sendTransaction(transaction, connection);
-
-        console.log(`https://solscan.io/tx/${txId}`);
-      } catch (err) {
-        console.error(err);
+        claimableAmount += rewards;
+        setDailyBonus(rewards);
       }
+
+      claimableAmount += calculateRewards(
+        deposited,
+        lastDepositedTimestamp,
+        currentTimestamp
+      );
+      setClaimableAmount(claimableAmount);
     }
   };
 
@@ -173,18 +194,11 @@ export default function Main() {
     if (wallet) {
       let staked = 0;
       try {
-        const [porkStake] = await PublicKey.findProgramAddress(
-          [Buffer.from(utils.bytes.utf8.encode("pork"))],
-          program.programId
-        );
-
-        const stakeData = await program.account.porkStake.fetch(porkStake);
+        const stakeData = await program.account.porkStake.fetch(PORK_STAKE);
         staked = stakeData.totalAmount.div(DECIMALS).toNumber();
-
         setTokenTVL(staked);
       } catch (err) {
         setTokenTVL(0);
-        // console.error(err);
       }
       try {
         const [walletUser] = await PublicKey.findProgramAddress(
@@ -223,32 +237,21 @@ export default function Main() {
           currentTimestamp
         );
 
+        setPorkUserData(userData);
         setEarnedYield(userData.claimedAmount.div(DECIMALS).toNumber());
         setPorkDeposit(deposited);
         setClaimableAmount(claimableAmount);
       } catch (err) {
-        // console.error(err);
         setEarnedYield(0);
         setPorkDeposit(0);
         setClaimableAmount(0);
         setDailyBonus(0);
       }
-
-      try {
-        const { data } = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
-        );
-        setTokenPrice(data.price);
-        setTokenSupply(data.supply);
-      } catch (err) {
-        setTokenPrice(0);
-        setTokenSupply(0);
-      }
     }
   };
 
   const handleDeposit = async () => {
-    if (!wallet || !program) {
+    if (!wallet || !program || !porkUser) {
       return;
     }
 
@@ -297,38 +300,30 @@ export default function Main() {
       TREASURY_ADDRESS
     );
 
-    const [porkStake] = await PublicKey.findProgramAddress(
-      [Buffer.from(utils.bytes.utf8.encode("pork"))],
-      program.programId
-    );
-
-    const stakeAta = getAssociatedTokenAddressSync(PORK_MINT, porkStake, true);
-
-    const [walletUser] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from(utils.bytes.utf8.encode("porkuser")),
-        wallet.publicKey.toBuffer(),
-      ],
-      program.programId
-    );
+    const stakeAta = getAssociatedTokenAddressSync(PORK_MINT, PORK_STAKE, true);
 
     let referralUser: any = null;
 
     if (referrer) {
-      [referralUser] = await PublicKey.findProgramAddress(
-        [
-          Buffer.from(utils.bytes.utf8.encode("porkuser")),
-          new PublicKey(referrer).toBuffer(),
-        ],
-        program.programId
-      );
+      try {
+        [referralUser] = await PublicKey.findProgramAddress(
+          [
+            Buffer.from(utils.bytes.utf8.encode("porkuser")),
+            new PublicKey(referrer).toBuffer(),
+          ],
+          program.programId
+        );
+      } catch (err) {
+        referralUser = null;
+      }
     }
 
     let firstDeposit = false;
     try {
-      const userData = await program.account.porkUser.fetch(walletUser);
+      await program.account.porkUser.fetch(porkUser);
     } catch (err) {
       firstDeposit = true;
+      referralUser = null;
     }
 
     try {
@@ -342,9 +337,9 @@ export default function Main() {
           porkMint: PORK_MINT,
           from: wallet.publicKey,
           fromAta: walletAta,
-          porkStake: porkStake,
+          porkStake: PORK_STAKE,
           stakeAta: stakeAta,
-          porkUser: walletUser,
+          porkUser: porkUser,
           referral: referrer ? new PublicKey(referrer) : randomKp.publicKey,
           referralUser: referralUser,
           treasuryAta: treasuryAta,
@@ -354,25 +349,22 @@ export default function Main() {
         })
         .transaction();
 
-      await sendTransaction(transaction, connection);
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "finalized");
 
-      if (referrer) {
-        if (firstDeposit) {
-          const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_BACKEND_API}/api/referral`,
-            {
-              referrer,
-              user: wallet?.publicKey?.toBase58(),
-              amount: Math.floor((amount * 95) / 500),
-            }
-          );
-        }
+      if (referrer && firstDeposit) {
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/referral`,
+          {
+            referrer,
+            user: wallet?.publicKey?.toBase58(),
+            amount: Math.floor((amount * 95) / 500),
+          }
+        );
       }
 
       toast.success("Successfully Deposited.", { duration: 3000 });
-      setTimeout(() => {
-        setRefetch((prev) => !prev);
-      }, 1000);
+      setRefetch((prev) => !prev);
     } catch (err) {
       console.error(err);
       toast.error("Failed to Deposit.", { duration: 3000 });
@@ -382,7 +374,7 @@ export default function Main() {
   };
 
   const handleClaim = async () => {
-    if (!wallet || !program) {
+    if (!wallet || !program || !porkUser) {
       return;
     }
 
@@ -396,30 +388,19 @@ export default function Main() {
       TREASURY_ADDRESS
     );
 
-    const [porkStake, bump] = await PublicKey.findProgramAddress(
-      [Buffer.from(utils.bytes.utf8.encode("pork"))],
-      program.programId
-    );
-
-    const stakeAta = getAssociatedTokenAddressSync(PORK_MINT, porkStake, true);
-
-    const [walletUser] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from(utils.bytes.utf8.encode("porkuser")),
-        wallet.publicKey.toBuffer(),
-      ],
-      program.programId
-    );
+    const stakeAta = getAssociatedTokenAddressSync(PORK_MINT, PORK_STAKE, true);
 
     let canClaimOrCompound = false;
     try {
-      const userData = await program.account.porkUser.fetch(walletUser);
+      const userData = await program.account.porkUser.fetch(porkUser);
       const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
       const timeDiff = new Date().getTime() / 1000 - lastDepositedTimestamp;
       if (timeDiff >= 3600) {
         canClaimOrCompound = true;
       }
-    } catch (err) {}
+    } catch (err) {
+      return;
+    }
 
     if (!canClaimOrCompound) {
       toast.error("You can claim or compound every hour.", { duration: 3000 });
@@ -430,14 +411,14 @@ export default function Main() {
 
     try {
       const transaction = await program.methods
-        .cashout(bump)
+        .cashout(PORK_BUMP)
         .accounts({
           to: wallet.publicKey,
           porkMint: PORK_MINT,
           toAta: walletAta,
-          porkStake: porkStake,
+          porkStake: PORK_STAKE,
           stakeAta: stakeAta,
-          porkUser: walletUser,
+          porkUser: porkUser,
           treasuryAta: treasuryAta,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -445,11 +426,11 @@ export default function Main() {
         })
         .transaction();
 
-      await sendTransaction(transaction, connection);
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "finalized");
+
       toast.success("Successfully Claimed.", { duration: 3000 });
-      setTimeout(() => {
-        setRefetch((prev) => !prev);
-      }, 1000);
+      setRefetch((prev) => !prev);
     } catch (err) {
       toast.error("Failed to Claim.", { duration: 3000 });
       console.error(err);
@@ -459,32 +440,21 @@ export default function Main() {
   };
 
   const handleCompound = async () => {
-    if (!wallet || !program) {
+    if (!wallet || !program || !porkUser) {
       return;
     }
 
-    const [porkStake] = await PublicKey.findProgramAddress(
-      [Buffer.from(utils.bytes.utf8.encode("pork"))],
-      program.programId
-    );
-
-    const [walletUser] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from(utils.bytes.utf8.encode("porkuser")),
-        wallet.publicKey.toBuffer(),
-      ],
-      program.programId
-    );
-
     let canClaimOrCompound = false;
     try {
-      const userData = await program.account.porkUser.fetch(walletUser);
+      const userData = await program.account.porkUser.fetch(porkUser);
       const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
       const timeDiff = new Date().getTime() / 1000 - lastDepositedTimestamp;
       if (timeDiff >= 3600) {
         canClaimOrCompound = true;
       }
-    } catch (err) {}
+    } catch (err) {
+      return;
+    }
 
     if (!canClaimOrCompound) {
       toast.error("You can claim or compound every hour.", { duration: 3000 });
@@ -498,17 +468,18 @@ export default function Main() {
         .compound()
         .accounts({
           signer: wallet.publicKey,
-          porkStake: porkStake,
-          porkUser: walletUser,
+          porkStake: PORK_STAKE,
+          porkUser: porkUser,
           systemProgram: SystemProgram.programId,
         })
         .transaction();
 
-      await sendTransaction(transaction, connection);
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "finalized");
+
       toast.success("Successfully Compounded.", { duration: 3000 });
-      setTimeout(() => {
-        setRefetch((prev) => !prev);
-      }, 1000);
+      
+      setRefetch((prev) => !prev);
     } catch (err) {
       toast.error("Failed to Compound.", { duration: 3000 });
       console.error(err);
