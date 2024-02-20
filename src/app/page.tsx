@@ -229,16 +229,16 @@ export default function Main() {
         console.error(err);
       }
 
-      //     try {
-      //       const { data } = await axios.get(
-      //         `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
-      //       );
-      //       setTokenPrice(data.price);
-      //       setTokenSupply(data.supply);
-      //     } catch (err) {
-      //       setTokenPrice(0);
-      //       setTokenSupply(0);
-      //     }
+      try {
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
+        );
+        setTokenPrice(data.price);
+        setTokenSupply(data.supply);
+      } catch (err) {
+        setTokenPrice(0);
+        setTokenSupply(0);
+      }
     }
   };
 
@@ -666,12 +666,9 @@ export default function Main() {
                               className="text-[#76c7ff] hover:cursor-pointer"
                               onClick={() => {
                                 navigator.clipboard.writeText(ref.user);
-                                toast.success(
-                                  "Copied.",
-                                  {
-                                    duration: 3000,
-                                  }
-                                );
+                                toast.success("Copied.", {
+                                  duration: 3000,
+                                });
                               }}
                             >
                               {showAddress(ref.user)}
