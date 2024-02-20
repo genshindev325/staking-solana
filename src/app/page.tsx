@@ -645,7 +645,7 @@ export default function Main() {
                   className="text-black indent-2 h-[40px] w-[340px] text-[16px] 2xl:h-[56px] 2xl:w-[400px] 2xl:text-[20px] mt-[12px]"
                 />
 
-                <div className="relative w-[400px] h-[80px] mt-[12px]">
+                <div className="relative w-[400px] h-[80px] mt-[12px] hover:cursor-pointer">
                   <Image
                     src="/images/buttons/affiliate.svg"
                     alt="Affiliate Button"
