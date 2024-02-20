@@ -719,7 +719,14 @@ export default function Main() {
                   className="absolute"
                   fill
                 />
-                <span className="text-white font-lilitaone text-[48px] z-10 text-shadow">
+                <span
+                  className={
+                    "text-white font-lilitaone z-10 text-shadow" +
+                    (claimableAmount > 1000_000
+                      ? " text-[32px]"
+                      : " text-[48px]")
+                  }
+                >
                   {claimableAmount.toLocaleString()}
                 </span>
               </div>
