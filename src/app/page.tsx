@@ -162,7 +162,7 @@ export default function Main() {
 
         const txId = await sendTransaction(transaction, connection);
 
-        console.log(`https://solscan.io/token/tx/${txId}?cluster=devnet`);
+        console.log(`https://solscan.io/tx/${txId}`);
       } catch (err) {
         console.error(err);
       }
@@ -183,7 +183,8 @@ export default function Main() {
 
         setTokenTVL(staked);
       } catch (err) {
-        console.error(err);
+        setTokenTVL(0);
+        // console.error(err);
       }
       try {
         const [walletUser] = await PublicKey.findProgramAddress(
@@ -415,7 +416,6 @@ export default function Main() {
       const userData = await program.account.porkUser.fetch(walletUser);
       const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
       const timeDiff = new Date().getTime() / 1000 - lastDepositedTimestamp;
-      console.log(timeDiff);
       if (timeDiff >= 3600) {
         canClaimOrCompound = true;
       }

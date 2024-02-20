@@ -5,11 +5,11 @@ require("dotenv").config();
 let tokenPrice = 0;
 let tokenTotalSupply = 0;
 let updatedTimeStamp = 0;
-// const PORK_TOKEN_ADDRESS = new PublicKey(process.env.NEXT_PUBLIC_PORK_MINT);
-// const rpcURL = process.env.NEXT_PUBLIC_RPC;
+const PORK_TOKEN_ADDRESS = new PublicKey(process.env.NEXT_PUBLIC_PORK_MINT);
+const rpcURL = process.env.NEXT_PUBLIC_RPC;
 
-const PORK_TOKEN_ADDRESS = new PublicKey('2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy');
-const rpcURL = 'https://rpc.hellomoon.io/0d85b056-7479-4f2f-9112-dd0eb04360ee';
+// const PORK_TOKEN_ADDRESS = new PublicKey('2kSmCB5PrswNvN5vrN4ayb2DnVbeFmNhX7QuHReeGKYy');
+// const rpcURL = 'https://rpc.hellomoon.io/0d85b056-7479-4f2f-9112-dd0eb04360ee';
 
 const reqURL =
   "https://api.coingecko.com/api/v3/coins/john-pork?localization=en&community_data=false&developer_data=false&sparkline=false";

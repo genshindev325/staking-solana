@@ -5,9 +5,9 @@ const RPC_ENDPOINT = process.env.NEXT_PUBLIC_RPC as string;
 
 const PORK_MINT = new PublicKey(process.env.NEXT_PUBLIC_PORK_MINT as string);
 
-const PROGRAM_ID = "FhWWsKM5erDU1xbhkpZayeieAXhGXauKZWKmRjEL9BZW";
+const PROGRAM_ID = "5FVv4vXjWxenXoyGreTVXvqNoNWVnDrCCZnQPfvynhbj";
 
-const TREASURY_ADDRESS = new PublicKey("HMXh8po6J3c319NeqkXMrJYDJnTK69fvDhK5p6KDWLgJ");
+const TREASURY_ADDRESS = new PublicKey("76hTqNGeRJ4m5j12WfwsQNJTcpyKNNUCMpKnYvmYY9Mv");
 
 const DECIMALS = new BN(1000_000_000);
 
