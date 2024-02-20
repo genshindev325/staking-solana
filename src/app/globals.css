@@ -43,8 +43,10 @@
 
 .wallet-adapter-button {
   text-transform: uppercase;
+  text-shadow: 0 1px black;
+  -webkit-text-stroke: 1px black;
   font-family: LilitaOne;
-  font-size: 18px;
+  font-size: 20px;
   height: 56px;
   line-height: 36px;
   display: flex;

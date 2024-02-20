@@ -663,7 +663,7 @@ export default function Main() {
                           <div>
                             Wallet:{" "}
                             <span
-                              className="text-shadow-sm hover:cursor-pointer"
+                              className="text-[#76c7ff] hover:cursor-pointer"
                               onClick={() => {
                                 navigator.clipboard.writeText(ref.user);
                                 toast.success(
@@ -778,7 +778,7 @@ export default function Main() {
                 className="absolute"
                 fill
               />
-              <span className="text-white font-lilitaone text-shadow-sm text-[24px] z-10 mt-[62px] 2xl:mt-[80px]">
+              <span className="text-white text-shadow-sm font-lilitaone text-[24px] z-10 mt-[62px] 2xl:mt-[80px]">
                 {dailyBonus == 0
                   ? "LOCKED"
                   : `${dailyBonus.toLocaleString()} $PORK`}
@@ -828,7 +828,7 @@ export default function Main() {
                   />
                 </div>
                 <span className="text-[10px] text-center font-thin">
-                  Text: 2% daily claimable and compoundable yield based on $PORK
+                  2% daily claimable and compoundable yield based on $PORK
                   deposited. Deposits are non-withdrawable.
                 </span>
               </div>
@@ -957,7 +957,7 @@ export default function Main() {
                 />
               </div>
               <span className="text-[10px] text-center font-thin">
-                Text: 2% daily claimable and compoundable yield based on $PORK
+                2% daily claimable and compoundable yield based on $PORK
                 deposited. Deposits are non-withdrawable.
               </span>
             </div>
