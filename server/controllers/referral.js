@@ -24,7 +24,9 @@ const createReferral = async (req, res) => {
 const getReferral = async (req, res) => {
   const { ref } = req.query;
 
-  const referrals = await ReferralModel.find({ referrer: ref });
+  const referrals = await ReferralModel.find({ referrer: ref })
+    .sort({ createdAt: -1 })
+    .limit(20);
 
   res.json({ referrals });
 };

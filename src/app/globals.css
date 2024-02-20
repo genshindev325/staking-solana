@@ -80,3 +80,8 @@
   text-shadow: 0 4px black;
   -webkit-text-stroke: 1px black;
 }
+
+.text-shadow-sm {
+  text-shadow: 0 1px black;
+  -webkit-text-stroke: 1px black;
+}

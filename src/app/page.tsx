@@ -390,6 +390,7 @@ export default function Main() {
       const userData = await program.account.porkUser.fetch(walletUser);
       const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
       const timeDiff = new Date().getTime() / 1000 - lastDepositedTimestamp;
+      console.log(timeDiff);
       if (timeDiff >= 3600) {
         canClaimOrCompound = true;
       }
@@ -597,7 +598,7 @@ export default function Main() {
 
         <div className="flex flex-col xl:flex-row content-container my-[40px] gap-[30px]">
           <div className="flex flex-col order-3 xl:order-1 gap-[12px] w-[380px] 2xl:w-[480px]">
-            <div className="relative flex w-[380px] h-[255px] 2xl:w-[480px] 2xl:h-[320px] hover:cursor-pointer">
+            <div className="relative flex w-[380px] h-[255px] 2xl:w-[480px] 2xl:h-[320px]">
               <Image
                 src="/images/affiliate_box.svg"
                 alt="Affiliate Box"
@@ -636,7 +637,7 @@ export default function Main() {
               </div>
             </div>
 
-            <div className="relative flex w-[380px] h-[335px] 2xl:w-[480px] 2xl:h-[420px] hover:cursor-pointer">
+            <div className="relative flex w-[380px] h-[335px] 2xl:w-[480px] 2xl:h-[420px]">
               <Image
                 src="/images/referral_history_area.svg"
                 alt="Referal History"
@@ -648,7 +649,7 @@ export default function Main() {
                   referrals.map((ref, idx) => {
                     return (
                       <div
-                        className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px] hover:cursor-pointer"
+                        className="relative flex w-[340px] h-[100px] mx-auto 2xl:w-[420px] 2xl:h-[132px]"
                         key={idx}
                       >
                         <Image
@@ -657,15 +658,31 @@ export default function Main() {
                           className="absolute"
                           fill
                         />
-                        <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px] text-shadow">
+                        <div className="flex flex-col justify-center gap-[4px] ml-[132px] xl:ml-[150px] z-10 text-white font-lilitaone text-[14px]">
                           <div>{ref.amount.toLocaleString()} $PORK REWARD</div>
-                          <div>Wallet: {showAddress(ref.user)}</div>
+                          <div>
+                            Wallet:{" "}
+                            <span
+                              className="text-shadow-sm hover:cursor-pointer"
+                              onClick={() => {
+                                navigator.clipboard.writeText(ref.user);
+                                toast.success(
+                                  "Copied.",
+                                  {
+                                    duration: 3000,
+                                  }
+                                );
+                              }}
+                            >
+                              {showAddress(ref.user)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
                   })
                 ) : (
-                  <div className="text-white font-lilitaone text-[40px] 2xl:text-[48px] text-shadow h-full flex items-center justify-center">
+                  <div className="text-white font-lilitaone text-[40px] 2xl:text-[48px] h-full flex items-center justify-center">
                     No Data
                   </div>
                 )}
@@ -705,14 +722,14 @@ export default function Main() {
           </div>
 
           <div className="flex flex-col order-1 xl:order-2 gap-[12px] w-[380px] 2xl:w-[480px]">
-            <div className="relative flex flex-col gap-[12px] 2xl:gap-[20px] items-center w-[380px] h-[380px] 2xl:w-[480px] 2xl:h-[480px] hover:cursor-pointer">
+            <div className="relative flex flex-col gap-[12px] 2xl:gap-[20px] items-center w-[380px] h-[380px] 2xl:w-[480px] 2xl:h-[480px]">
               <Image
                 src="/images/main_area.svg"
                 alt="Main Area"
                 className="absolute"
                 fill
               />
-              <div className="relative flex justify-center items-center w-[320px] h-[88px] 2xl:w-[380px] 2xl:h-[100px] hover:cursor-pointer mt-[120px] 2xl:mt-[160px]">
+              <div className="relative flex justify-center items-center w-[320px] h-[88px] 2xl:w-[380px] 2xl:h-[100px] mt-[120px] 2xl:mt-[160px]">
                 <Image
                   src="/images/buttons/pork_yield_background.svg"
                   alt="Pork Yield Background"
@@ -754,14 +771,14 @@ export default function Main() {
                 />
               </div>
             </div>
-            <div className="relative flex justify-center w-[380px] h-[180px] 2xl:w-[480px] 2xl:h-[220px] hover:cursor-pointer">
+            <div className="relative flex justify-center w-[380px] h-[180px] 2xl:w-[480px] 2xl:h-[220px]">
               <Image
                 src="/images/daily_bonus.svg"
                 alt="Main Area"
                 className="absolute"
                 fill
               />
-              <span className="text-white font-lilitaone text-[24px] z-10 text-shadow mt-[60px] 2xl:mt-[80px]">
+              <span className="text-white font-lilitaone text-shadow-sm text-[24px] z-10 mt-[62px] 2xl:mt-[80px]">
                 {dailyBonus == 0
                   ? "LOCKED"
                   : `${dailyBonus.toLocaleString()} $PORK`}
@@ -819,14 +836,14 @@ export default function Main() {
           </div>
 
           <div className="flex flex-col order-2 xl:order-3 gap-[12px] w-[380px] 2xl:w-[480px]">
-            <div className="relative flex order-2 xl:order-1 w-[380px] h-[128px] 2xl:w-[480px] 2xl:h-[160px] hover:cursor-pointer">
+            <div className="relative flex order-2 xl:order-1 w-[380px] h-[128px] 2xl:w-[480px] 2xl:h-[160px]">
               <img
                 src="/images/instructions_area.png"
                 alt="Instruction Area"
                 className="absolute"
               />
             </div>
-            <div className="relative flex flex-col order-1 xl:order-2 w-[380px] h-[420px] 2xl:w-[480px] 2xl:h-[530px] hover:cursor-pointer">
+            <div className="relative flex flex-col order-1 xl:order-2 w-[380px] h-[420px] 2xl:w-[480px] 2xl:h-[530px]">
               <Image
                 src="/images/statistics_area.svg"
                 alt="Main Area"
