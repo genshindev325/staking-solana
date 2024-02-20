@@ -350,7 +350,7 @@ export default function Main() {
         .transaction();
 
       const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, "finalized");
+      await connection.confirmTransaction(signature, "confirmed");
 
       if (referrer && firstDeposit) {
         const { data } = await axios.post(
@@ -427,7 +427,7 @@ export default function Main() {
         .transaction();
 
       const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, "finalized");
+      await connection.confirmTransaction(signature, "confirmed");
 
       toast.success("Successfully Claimed.", { duration: 3000 });
       setRefetch((prev) => !prev);
@@ -475,7 +475,7 @@ export default function Main() {
         .transaction();
 
       const signature = await sendTransaction(transaction, connection);
-      await connection.confirmTransaction(signature, "finalized");
+      await connection.confirmTransaction(signature, "confirmed");
 
       toast.success("Successfully Compounded.", { duration: 3000 });
       
