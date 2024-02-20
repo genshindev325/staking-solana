@@ -143,9 +143,18 @@ export default function Main() {
   }, [wallet]);
 
   useEffect(() => {
-    if (program) {
-      updateInfo(program);
-    }
+    (async function() {
+      if (program) {
+        setLoading(true);
+        try {
+          await updateInfo(program);
+        } catch(err) {
+
+        } 
+        setLoading(false);
+      }
+    })();
+    
   }, [wallet, program, refetch]);
 
   useEffect(() => {
