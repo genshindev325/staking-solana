@@ -118,26 +118,17 @@ export default function Main() {
   }, [wallet]);
 
   useEffect(() => {
-    updateInfo();
+    if (program) {
+      updateInfo(program);
+    }
   }, [wallet, program, refetch]);
 
-  // useEffect(() => {
-  //   (async function () {
-  //     try {
-  //       const { data } = await axios.get(
-  //         `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
-  //       );
-  //       setTokenPrice(data.price);
-  //       setTokenSupply(data.supply);
-  //     } catch (err) {
-  //       setTokenPrice(0);
-  //       setTokenSupply(0);
-  //     }
-  //   })();
-  // }, []);
-
   useEffect(() => {
-    const interval = setInterval(updateInfo, 60000);
+    const interval = setInterval(() => {
+      if (program) {
+        updateInfo(program);
+      }
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
@@ -156,7 +147,6 @@ export default function Main() {
           true
         );
 
-        console.log(PORK_MINT?.toBase58());
         const transaction = await program.methods
           .initialize()
           .accounts({
@@ -170,22 +160,18 @@ export default function Main() {
           })
           .transaction();
 
-        await sendTransaction(transaction, connection);
+        const txId = await sendTransaction(transaction, connection);
 
-        console.log(
-          `https://solscan.io/token/tx/${transaction}?cluster=devnet`
-        );
+        console.log(`https://solscan.io/token/tx/${txId}?cluster=devnet`);
       } catch (err) {
         console.error(err);
       }
     }
   };
-  const updateInfo = async () => {
-    if (wallet && program) {
-      setLoading(true);
 
+  const updateInfo = async (program: Program) => {
+    if (wallet) {
       let staked = 0;
-
       try {
         const [porkStake] = await PublicKey.findProgramAddress(
           [Buffer.from(utils.bytes.utf8.encode("pork"))],
@@ -197,7 +183,7 @@ export default function Main() {
 
         setTokenTVL(staked);
       } catch (err) {
-        // console.error(err);
+        console.error(err);
       }
       try {
         const [walletUser] = await PublicKey.findProgramAddress(
@@ -227,7 +213,6 @@ export default function Main() {
             currentTimestamp
           );
           claimableAmount += rewards;
-          console.log(rewards);
           setDailyBonus(rewards);
         }
 
@@ -241,10 +226,19 @@ export default function Main() {
         setPorkDeposit(deposited);
         setClaimableAmount(claimableAmount);
       } catch (err) {
-        // console.error(err);
+        console.error(err);
       }
 
-      setLoading(false);
+      //     try {
+      //       const { data } = await axios.get(
+      //         `${process.env.NEXT_PUBLIC_BACKEND_API}/api/market-data`
+      //       );
+      //       setTokenPrice(data.price);
+      //       setTokenSupply(data.supply);
+      //     } catch (err) {
+      //       setTokenPrice(0);
+      //       setTokenSupply(0);
+      //     }
     }
   };
 
@@ -395,8 +389,8 @@ export default function Main() {
     try {
       const userData = await program.account.porkUser.fetch(walletUser);
       const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
-      const timeDiff = ((new Date()).getTime() / 1000) - lastDepositedTimestamp;
-      if(timeDiff >= 3600) {
+      const timeDiff = new Date().getTime() / 1000 - lastDepositedTimestamp;
+      if (timeDiff >= 3600) {
         canClaimOrCompound = true;
       }
     } catch (err) {}
@@ -460,8 +454,8 @@ export default function Main() {
     try {
       const userData = await program.account.porkUser.fetch(walletUser);
       const lastDepositedTimestamp = userData.lastDepositTimestamp.toNumber();
-      const timeDiff = ((new Date()).getTime() / 1000) - lastDepositedTimestamp;
-      if(timeDiff >= 3600) {
+      const timeDiff = new Date().getTime() / 1000 - lastDepositedTimestamp;
+      if (timeDiff >= 3600) {
         canClaimOrCompound = true;
       }
     } catch (err) {}
@@ -792,7 +786,6 @@ export default function Main() {
                     width={166}
                     height={60}
                     onClick={() => {
-                      console.log("kkkk");
                       handleDeposit();
                     }}
                   />
@@ -820,11 +813,10 @@ export default function Main() {
 
           <div className="flex flex-col order-2 xl:order-3 gap-[12px] w-[380px] 2xl:w-[480px]">
             <div className="relative flex order-2 xl:order-1 w-[380px] h-[128px] 2xl:w-[480px] 2xl:h-[160px] hover:cursor-pointer">
-              <Image
-                src="/images/instructions_area.svg"
-                alt="Main Area"
+              <img
+                src="/images/instructions_area.png"
+                alt="Instruction Area"
                 className="absolute"
-                fill
               />
             </div>
             <div className="relative flex flex-col order-1 xl:order-2 w-[380px] h-[420px] 2xl:w-[480px] 2xl:h-[530px] hover:cursor-pointer">
