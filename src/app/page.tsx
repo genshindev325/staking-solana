@@ -335,10 +335,12 @@ export default function Main() {
 
     let firstDeposit = false;
     try {
-      await program.account.porkUser.fetch(porkUser);
+      const userData = await program.account.porkUser.fetch(porkUser);
+      if (userData.depostedAmount.toNumber() == 0) {
+        firstDeposit = true;
+      }
     } catch (err) {
       firstDeposit = true;
-      referralUser = null;
     }
 
     try {
