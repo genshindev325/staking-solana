@@ -139,22 +139,27 @@ export default function Main() {
           setTokenSupply(0);
         }
       })();
+    } else {
+      setEarnedYield(0);
+      setPorkDeposit(0);
+      setClaimableAmount(0);
+      setDailyBonus(0);
+      setPorkUserData(null);
+      setReferalLink("");
+      setReferrals([]);
     }
   }, [wallet]);
 
   useEffect(() => {
-    (async function() {
+    (async function () {
       if (program) {
         setLoading(true);
         try {
           await updateInfo(program);
-        } catch(err) {
-
-        } 
+        } catch (err) {}
         setLoading(false);
       }
     })();
-    
   }, [wallet, program, refetch]);
 
   useEffect(() => {
@@ -255,6 +260,7 @@ export default function Main() {
         setPorkDeposit(0);
         setClaimableAmount(0);
         setDailyBonus(0);
+        setPorkUserData(null);
       }
     }
   };
@@ -487,7 +493,7 @@ export default function Main() {
       await connection.confirmTransaction(signature, "confirmed");
 
       toast.success("Successfully Compounded.", { duration: 3000 });
-      
+
       setRefetch((prev) => !prev);
     } catch (err) {
       toast.error("Failed to Compound.", { duration: 3000 });
